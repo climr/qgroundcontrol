@@ -2996,7 +2996,7 @@ QString Vehicle::_vehicleIdSpeech()
 
 void Vehicle::_handleFlightModeChanged(const QString& flightMode)
 {
-    _say(tr("%1 %2 flight mode").arg(_vehicleIdSpeech()).arg(flightMode));
+    _say(tr("%1 %2 mode").arg(_vehicleIdSpeech()).arg(flightMode));
     emit guidedModeChanged(_firmwarePlugin->isGuidedMode(this));
 }
 
@@ -3029,6 +3029,10 @@ void Vehicle::_setLanding(bool landing)
 bool Vehicle::guidedModeSupported() const
 {
     return _firmwarePlugin->isCapable(this, FirmwarePlugin::GuidedModeCapability);
+}
+bool Vehicle::weaponsArmed() const
+{
+    return _weaponsarmed;
 }
 
 bool Vehicle::pauseVehicleSupported() const
@@ -3934,6 +3938,97 @@ void Vehicle::_handleADSBVehicle(const mavlink_message_t& message)
     }
 }
 
+void Vehicle::set4WSteeringMode(bool value)
+{
+    if (!_priorityLink) {
+        return;
+    }
+
+    if (value)
+    {
+        //true, we do want 4w steer
+        //set SERVO1_FUNCTION (front) = 26 (GroundSteering)
+        //set SERVO2_FUNCTION (rear) = 26 (GroundSteering)
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO1_FUNCTION")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO1_FUNCTION");
+            fact->setRawValue(QVariant(26));
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_FUNCTION")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_FUNCTION");
+            fact->setRawValue(QVariant(26));
+        }
+        _say(tr("%1 : Four Wheel Steering Mode").arg(_vehicleIdSpeech()));
+        //qgcApp()->showMessage(QObject::tr("Four Wheel Steering Mode Enabled"));
+    }
+    else
+    {
+        //we want 2w steer
+        //set SERVO1_FUNCTION (front) = 26 (GroundSteering)
+        //set SERVO2_FUNCTION (rear) = 0 (Disabled)
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO1_FUNCTION")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO1_FUNCTION");
+            fact->setRawValue(QVariant(26));
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_FUNCTION")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_FUNCTION");
+            fact->setRawValue(QVariant(0));
+        }
+
+        _say(tr("%1 : Two Wheel Steering Mode").arg(_vehicleIdSpeech()));
+        //qgcApp()->showMessage(QObject::tr("Two Wheel Steering Mode Enabled"));
+    }
+
+}
+
+void Vehicle::setWeaponsArmed(bool value)
+{
+     _weaponsarmed = value;
+
+    if (value)
+        _say(tr("%1 : Weapon System Armed").arg(_vehicleIdSpeech()));
+    else
+        _say(tr("%1 : Weapon System Disarmed").arg(_vehicleIdSpeech()));
+
+    emit weaponsArmedChanged(_weaponsarmed);
+}
+
+void Vehicle::setWeaponFire(bool value)
+{
+    int servoChannel = 8;
+    int servoHigh = 2000;
+    int servoLow = 900;
+    if (!value)
+    {
+        sendMavCommand(defaultComponentId(),
+                       MAV_CMD_DO_SET_SERVO,
+                       false,
+                       servoChannel,
+                       servoLow,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0);
+        return;
+    }
+    if (_weaponsarmed && value)
+    {
+         //set servo high
+         sendMavCommand(defaultComponentId(),
+                        MAV_CMD_DO_SET_SERVO,
+                        false,
+                        servoChannel,
+                        servoHigh,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0);
+          _say(tr("%1 : Fired").arg(_vehicleIdSpeech()));
+    }
+
+
+}
 void Vehicle::_updateDistanceHeadingToHome()
 {
     if (coordinate().isValid() && homePosition().isValid()) {

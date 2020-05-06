@@ -37,6 +37,8 @@
 #include "Vehicle.h"
 #include "Joystick.h"
 #include "QGCApplication.h"
+#include "ParameterManager.h"
+
 
 QGC_LOGGING_CATEGORY(UASLog, "UASLog")
 
@@ -797,6 +799,35 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
 
     emit parameterUpdate(uasId, compId, paramName, rawValue.param_count, rawValue.param_index, rawValue.param_type, paramValue);
 }
+
+void UAS::setServo(int channel, int value)
+{
+    if (!_vehicle || !_vehicle->priorityLink()) {
+        return;
+    }
+
+    // We can't use sendMavCommand here since we have no idea how long it will be before the command returns a result. and we don't care about the result in this case
+    mavlink_message_t msg;
+    mavlink_msg_command_long_pack_chan(mavlink->getSystemId(),
+                                       mavlink->getComponentId(),
+                                       _vehicle->priorityLink()->mavlinkChannel(),
+                                       &msg,
+                                       uasId,
+                                       _vehicle->defaultComponentId(),   // target component
+                                       MAV_CMD_DO_SET_SERVO,    // command id
+                                       0, //first transmission
+                                       channel,
+                                       value,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                       0);
+    _vehicle->sendMessageOnLink(_vehicle->priorityLink(), msg);
+
+}
+
+
 
 /**
 * Set the manual control commands.

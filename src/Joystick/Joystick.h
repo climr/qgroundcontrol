@@ -204,6 +204,12 @@ signals:
     void manualControl              (float roll, float pitch, float yaw, float throttle, quint16 buttons, int joystickMmode);
     void manualControlGimbal        (float gimbalPitch, float gimbalYaw);
 
+    void setDoSetServo              (int channel, int value);
+    void set4WSteeringMode          (bool value);
+    void setWeaponsArmed            (bool value);
+    void setWeaponFire              (bool value);
+
+
     void buttonActionTriggered      (int action);
 
     void gimbalEnabledChanged       ();
@@ -351,6 +357,10 @@ private:
     static const char* _buttonActionGimbalLeft;
     static const char* _buttonActionGimbalRight;
     static const char* _buttonActionGimbalCenter;
+    static const char* _buttonAction2WSteering;
+    static const char* _buttonAction4WSteering;
+    static const char* _buttonActionArmWeapons;
+    static const char* _buttonActionFireWeapon;
 
 private slots:
     void _activeVehicleChanged(Vehicle* activeVehicle);

@@ -55,6 +55,7 @@ Item {
             }
         }
     }
+
     Rectangle {
         anchors.fill:   parent
         color:          "black"

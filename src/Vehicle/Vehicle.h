@@ -529,7 +529,7 @@ public:
         CheckListFailed,
     };
     Q_ENUM(CheckList)
-
+    Q_PROPERTY(bool                 weaponsArmed            READ weaponsArmed                                           NOTIFY weaponsArmedChanged)
     Q_PROPERTY(int                  id                      READ id                                                     CONSTANT)
     Q_PROPERTY(AutoPilotPlugin*     autopilot               MEMBER _autopilotPlugin                                     CONSTANT)
     Q_PROPERTY(QGeoCoordinate       coordinate              READ coordinate                                             NOTIFY coordinateChanged)
@@ -781,6 +781,7 @@ public:
     Q_INVOKABLE void flashBootloader();
 #endif
 
+    bool    weaponsArmed            () const;
     bool    guidedModeSupported     () const;
     bool    pauseVehicleSupported   () const;
     bool    orbitModeSupported      () const;
@@ -804,6 +805,9 @@ public:
 
     void updateFlightDistance(double distance);
 
+    void set4WSteeringMode(bool value);
+    void setWeaponsArmed(bool value);
+    void setWeaponFire(bool value);
     int joystickMode();
     void setJoystickMode(int mode);
 
@@ -819,6 +823,8 @@ public:
 
     // Property accesors
     int id() { return _id; }
+
+
     MAV_AUTOPILOT firmwareType() const { return _firmwareType; }
     MAV_TYPE vehicleType() const { return _vehicleType; }
     Q_INVOKABLE QString vehicleTypeName() const;
@@ -851,6 +857,7 @@ public:
     QGeoCoordinate homePosition();
 
     bool armed      () { return _armed; }
+    bool weaponsArmed      () { return _weaponsarmed; }
     void setArmed   (bool armed);
 
     bool flightModeSetAvailable             ();
@@ -959,7 +966,7 @@ public:
     unsigned int    telemetryTXBuffer       () { return _telemetryTXBuffer; }
     int             telemetryLNoise         () { return _telemetryLNoise; }
     int             telemetryRNoise         () { return _telemetryRNoise; }
-    bool            autoDisarm              ();
+    bool            autoDisarm              ();    
     bool            highLatencyLink         () const { return _highLatencyLink; }
     bool            orbitActive             () const { return _orbitActive; }
     QGCMapCircle*   orbitMapCircle          () { return &_orbitMapCircle; }
@@ -1004,7 +1011,7 @@ public:
     ParameterManager*       parameterManager() const { return _parameterManager; }
     VehicleObjectAvoidance* objectAvoidance()  { return _objectAvoidance; }
 
-    static const int cMaxRcChannels = 18;
+    static const int cMaxRcChannels = 18;    
 
     bool containsLink(LinkInterface* link) { return _links.contains(link); }
 
@@ -1178,6 +1185,7 @@ signals:
     void currentConfigChanged           ();
     void flowImageIndexChanged          ();
     void rcRSSIChanged                  (int rcRSSI);
+    void weaponsArmedChanged            (bool value);
     void telemetryRRSSIChanged          (int value);
     void telemetryLRSSIChanged          (int value);
     void telemetryRXErrorsChanged       (unsigned int value);
@@ -1348,6 +1356,7 @@ private:
     void _flightTimerStop               ();
     void _batteryStatusWorker           (int batteryId, double voltage, double current, double batteryRemainingPct);
 
+
     int     _id;                    ///< Mavlink system id
     int     _defaultComponentId;
     bool    _active;
@@ -1464,6 +1473,7 @@ private:
 #endif
 
     bool    _armed;         ///< true: vehicle is armed
+    bool    _weaponsarmed = false;  ///true: weapon system is armed
     uint8_t _base_mode;     ///< base_mode from HEARTBEAT
     uint32_t _custom_mode;  ///< custom_mode from HEARTBEAT
 

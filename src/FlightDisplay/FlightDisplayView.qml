@@ -41,13 +41,14 @@ Item {
 
     property alias  guidedController:              guidedActionsController
     property bool   activeVehicleJoystickEnabled:  activeVehicle ? activeVehicle.joystickEnabled : false
-    property bool   mainIsMap:                     QGroundControl.videoManager.hasVideo ? QGroundControl.loadBoolGlobalSetting(_mainIsMapKey,  true) : true
+    property bool   mainIsMap:                     QGroundControl.videoManager.hasVideo ? false : true //QGroundControl.loadBoolGlobalSetting(_mainIsMapKey,  true) : true
     property bool   isBackgroundDark:              mainIsMap ? (mainWindow.flightDisplayMap ? mainWindow.flightDisplayMap.isSatelliteMap : true) : true
+
 
     property var    _missionController:             _planController.missionController
     property var    _geoFenceController:            _planController.geoFenceController
     property var    _rallyPointController:          _planController.rallyPointController
-    property bool   _isPipVisible:                  QGroundControl.videoManager.hasVideo ? QGroundControl.loadBoolGlobalSetting(_PIPVisibleKey, true) : false
+    property bool   _isPipVisible:                  false //QGroundControl.videoManager.hasVideo ? QGroundControl.loadBoolGlobalSetting(_PIPVisibleKey, true) : false
     property bool   _useChecklist:                  QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
     property bool   _enforceChecklist:              _useChecklist && QGroundControl.settingsManager.appSettings.enforceChecklist.rawValue
     property bool   _checklistComplete:             activeVehicle && (activeVehicle.checkListState === Vehicle.CheckListPassed)
@@ -122,6 +123,7 @@ Item {
         }
     }
 
+
     Connections {
         target:                     _missionController
         onResumeMissionUploadFail:  guidedActionsController.confirmAction(guidedActionsController.actionResumeMissionUploadFail)
@@ -160,6 +162,7 @@ Item {
                                                         (_missionController.containsItems || _geoFenceController.containsItems || _rallyPointController.containsItems ||
                                                         (activeVehicle ? activeVehicle.cameraTriggerPoints.count !== 0 : false))
 
+
     onVehicleArmedChanged: {
         if (vehicleArmed) {
             vehicleWasArmed = true
@@ -178,6 +181,7 @@ Item {
             vehicleWasInMissionFlightMode = true
         }
     }
+
 
     Component {
         id: missionCompleteDialogComponent
@@ -537,7 +541,24 @@ Item {
             z:                          _mapAndVideo.z + 4
             guidedActionsController:    _guidedController
         }
+        Rectangle {
+            id:             test_patrios
+            anchors.bottom:             parent.bottom
+            anchors.bottomMargin:       ScreenTools.defaultFontPixelHeight * 2
+            anchors.horizontalCenter:   parent.horizontalCenter
+            color:          Qt.rgba(0,0,0,0.75)
+            visible:        (activeVehicle) ? activeVehicle.weaponsArmed : false
+            z:                          _mapAndVideo.z + 5
+            QGCLabel {
+                //text:               (activeVehicle && activeVehicle.battery.voltage.value !== -1) ? (activeVehicle.battery.voltage.valueString + " " + activeVehicle.battery.voltage.units) : "N/A"
+                text:               "WEAPONS ARMED!"
+                font.family:        ScreenTools.demiboldFontFamily
+                color:              "red"
+                font.pointSize:     ScreenTools.largeFontPointSize
+                anchors.centerIn:   parent
 
+            }
+        }
         //-- Virtual Joystick
         Loader {
             id:                         virtualJoystickMultiTouch
@@ -559,9 +580,13 @@ Item {
             property Fact _virtualJoystickCentralized: QGroundControl.settingsManager.appSettings.virtualJoystickCentralized
         }
 
+
+
+
         ToolStrip {
-            visible:            (activeVehicle ? activeVehicle.guidedModeSupported : true) && !QGroundControl.videoManager.fullScreen
-            id:                 toolStrip
+            //visible:            (activeVehicle ? activeVehicle.guidedModeSupported : true) && !QGroundControl.videoManager.fullScreen
+            visible: false
+  //          id:                 toolStrip
 
             anchors.leftMargin: isInstrumentRight() ? _toolsMargin : undefined
             anchors.left:       isInstrumentRight() ? _mapAndVideo.left : undefined
