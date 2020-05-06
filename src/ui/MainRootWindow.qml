@@ -32,7 +32,10 @@ ApplicationWindow {
     Component.onCompleted: {
         //-- Full screen on mobile or tiny screens
         if(ScreenTools.isMobile || Screen.height / ScreenTools.realPixelDensity < 120) {
-            mainWindow.showFullScreen()
+            //mainWindow.showFullScreen()  //this caused some issues on the tablet, like couldn't enter text with windows keyboard.  probably fine with
+            width = Screen.width;
+            height = Screen.height;
+            flags: Qt.FramelessWindowHint | Qt.Window
         } else {
             width   = ScreenTools.isMobile ? Screen.width  : Math.min(250 * Screen.pixelDensity, Screen.width)
             height  = ScreenTools.isMobile ? Screen.height : Math.min(150 * Screen.pixelDensity, Screen.height)

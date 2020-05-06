@@ -70,6 +70,8 @@ const char* Joystick::_buttonAction2WSteering =         QT_TR_NOOP("2 Wheel Stee
 const char* Joystick::_buttonAction4WSteering =         QT_TR_NOOP("4 Wheel Steering Mode");
 const char* Joystick::_buttonActionArmWeapons =         QT_TR_NOOP("Arm Weapon System");
 const char* Joystick::_buttonActionFireWeapon =         QT_TR_NOOP("Fire Weapon System");
+const char* Joystick::_buttonActionSlowSpeedMode =         QT_TR_NOOP("Slow Speed Mode");
+const char* Joystick::_buttonActionHighSpeedMode =         QT_TR_NOOP("High Speed Mode");
 
 const char* Joystick::_rgFunctionSettingsKey[Joystick::maxFunction] = {
     "RollAxis",
@@ -734,6 +736,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::set4WSteeringMode, _activeVehicle, &Vehicle::set4WSteeringMode);
             disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
+            disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
         }
         // Always set up the new vehicle
         _activeVehicle = vehicle;
@@ -761,6 +764,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
             connect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
             connect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
+            connect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
 
             // FIXME: ****
             //connect(this, &Joystick::buttonActionTriggered, uas, &UAS::triggerAction);
@@ -790,6 +794,7 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
             disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
+            disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
 
         }
         // FIXME: ****
@@ -1101,6 +1106,13 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
            if (buttonDown) emit setWeaponFire(true);  //fire when button held down
            else emit setWeaponFire(false);
        }
+    else if(action == _buttonActionSlowSpeedMode) {
+            if (buttonDown) emit setSlowSpeedMode(true);
+        }
+    else if(action == _buttonActionHighSpeedMode) {
+            if (buttonDown) emit setSlowSpeedMode(false);
+        }
+
     else {
         qCDebug(JoystickLog) << "_buttonAction unknown action:" << action;
     }
@@ -1193,6 +1205,9 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonAction4WSteering));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArmWeapons));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionFireWeapon));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionSlowSpeedMode));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionHighSpeedMode));
+
     for(int i = 0; i < _assignableButtonActions.count(); i++) {
         AssignableButtonAction* p = qobject_cast<AssignableButtonAction*>(_assignableButtonActions[i]);
         _availableActionTitles << p->action();

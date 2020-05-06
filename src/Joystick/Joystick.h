@@ -208,6 +208,7 @@ signals:
     void set4WSteeringMode          (bool value);
     void setWeaponsArmed            (bool value);
     void setWeaponFire              (bool value);
+    void setSlowSpeedMode           (bool value);
 
 
     void buttonActionTriggered      (int action);
@@ -361,6 +362,8 @@ private:
     static const char* _buttonAction4WSteering;
     static const char* _buttonActionArmWeapons;
     static const char* _buttonActionFireWeapon;
+    static const char* _buttonActionSlowSpeedMode;
+    static const char* _buttonActionHighSpeedMode;
 
 private slots:
     void _activeVehicleChanged(Vehicle* activeVehicle);

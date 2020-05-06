@@ -541,6 +541,79 @@ Item {
             z:                          _mapAndVideo.z + 4
             guidedActionsController:    _guidedController
         }
+
+
+
+
+                Rectangle {
+                    width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
+                    height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2
+                    radius: ScreenTools.defaultFontPixelHeight * 0.5
+                    color:  Qt.rgba(0,0,0,0.5) //qgcPal.window
+                    border.color:   qgcPal.text
+                    anchors.right:              parent.right
+                    anchors.top:             parent.top
+                    anchors.topMargin:       ScreenTools.toolbarHeight + _margins
+                    anchors.rightMargin:       ScreenTools.defaultFontPixelHeight * 2
+                    visible:        activeVehicle && !QGroundControl.videoManager.fullScreen
+                    z:                          _mapAndVideo.z + 5
+                    //anchors.horizontalCenter:   parent.horizontalCenter
+
+                    Column {
+                        id:                 patriosCol
+                        spacing:            ScreenTools.defaultFontPixelHeight * 0.5
+                        width:              Math.max(patriosGrid.width, patriosLabel.width)
+                        anchors.margins:    ScreenTools.defaultFontPixelHeight
+                        anchors.centerIn:   parent
+
+                        QGCLabel {
+                            id:             patriosLabel
+                            text:           qsTr("Vehicle Status")
+                            color:          "white"
+                            font.family:    ScreenTools.demiboldFontFamily
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+
+                        GridLayout {
+                            id:                 patriosGrid
+                            anchors.margins:    ScreenTools.defaultFontPixelHeight
+                            columnSpacing:      ScreenTools.defaultFontPixelWidth
+                            columns:            2
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            QGCLabel {
+                                text: qsTr("Steering Mode:")
+                                color: "white"
+                            }
+                            QGCLabel {
+                                //text: qsTr("4W")
+                                text: activeVehicle.fourWheelSteering ? "4W" : "2W";
+                                //text: activeVehicle.weaponsArmed
+                                //text: (activeVehicle && activeVehicle.battery.voltage.value !== -1) ? (activeVehicle.battery.voltage.valueString + " " + activeVehicle.battery.voltage.units) : "N/A"
+                                color: "white"
+                            }
+                            QGCLabel {
+                                text: qsTr("Speed Mode:")
+                                color: "white"
+                            }
+                            QGCLabel {
+                                //text: (activeVehicle && activeVehicle.battery.mahConsumed.value !== -1) ? (activeVehicle.battery.mahConsumed.valueString + " " + activeVehicle.battery.mahConsumed.units) : "N/A"
+                                text: activeVehicle.slowSpeedMode ? "Slow" : "Fast";
+                                color: "white"
+                            }
+                            QGCLabel {
+                                text: qsTr("Weapons:")
+                                color: "white"
+                            }
+                            QGCLabel {
+                                //text: (activeVehicle && activeVehicle.battery.mahConsumed.value !== -1) ? (activeVehicle.battery.mahConsumed.valueString + " " + activeVehicle.battery.mahConsumed.units) : "N/A"
+                                text: activeVehicle.weaponsArmed ? "ARMED" : "Disarmed"
+                                color: activeVehicle.weaponsArmed ? "red" : "white"
+                            }
+                        }
+                    }
+                }
+
         Rectangle {
             id:             test_patrios
             anchors.bottom:             parent.bottom
@@ -579,7 +652,6 @@ Item {
             property Fact _virtualJoystick: QGroundControl.settingsManager.appSettings.virtualJoystick
             property Fact _virtualJoystickCentralized: QGroundControl.settingsManager.appSettings.virtualJoystickCentralized
         }
-
 
 
 

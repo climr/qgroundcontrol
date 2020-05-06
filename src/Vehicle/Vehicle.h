@@ -530,6 +530,8 @@ public:
     };
     Q_ENUM(CheckList)
     Q_PROPERTY(bool                 weaponsArmed            READ weaponsArmed                                           NOTIFY weaponsArmedChanged)
+    Q_PROPERTY(bool                 fourWheelSteering       READ fourWheelSteering                                      NOTIFY steeringModeChanged)
+    Q_PROPERTY(bool                 slowSpeedMode           READ slowSpeedMode                                          NOTIFY speedModeChanged)
     Q_PROPERTY(int                  id                      READ id                                                     CONSTANT)
     Q_PROPERTY(AutoPilotPlugin*     autopilot               MEMBER _autopilotPlugin                                     CONSTANT)
     Q_PROPERTY(QGeoCoordinate       coordinate              READ coordinate                                             NOTIFY coordinateChanged)
@@ -782,6 +784,7 @@ public:
 #endif
 
     bool    weaponsArmed            () const;
+    bool    isSteeringFourWheel     () const;
     bool    guidedModeSupported     () const;
     bool    pauseVehicleSupported   () const;
     bool    orbitModeSupported      () const;
@@ -808,6 +811,7 @@ public:
     void set4WSteeringMode(bool value);
     void setWeaponsArmed(bool value);
     void setWeaponFire(bool value);
+    void setSlowSpeedMode(bool value);
     int joystickMode();
     void setJoystickMode(int mode);
 
@@ -858,6 +862,8 @@ public:
 
     bool armed      () { return _armed; }
     bool weaponsArmed      () { return _weaponsarmed; }
+    bool slowSpeedMode  () { return _slowspeedmode;}
+    bool fourWheelSteering       () { return _fourwheelsteering; }
     void setArmed   (bool armed);
 
     bool flightModeSetAvailable             ();
@@ -1186,6 +1192,8 @@ signals:
     void flowImageIndexChanged          ();
     void rcRSSIChanged                  (int rcRSSI);
     void weaponsArmedChanged            (bool value);
+    void steeringModeChanged            (bool value);
+    void speedModeChanged               (bool value);
     void telemetryRRSSIChanged          (int value);
     void telemetryLRSSIChanged          (int value);
     void telemetryRXErrorsChanged       (unsigned int value);
@@ -1474,6 +1482,9 @@ private:
 
     bool    _armed;         ///< true: vehicle is armed
     bool    _weaponsarmed = false;  ///true: weapon system is armed
+    bool    _slowspeedmode = false;    ///true: slow speed mode is on
+    bool    _fourwheelsteering = false;  ///true: 4wsteering is engaged
+    bool    _highspeedmode = false; ///true: high speed mode is engaged
     uint8_t _base_mode;     ///< base_mode from HEARTBEAT
     uint32_t _custom_mode;  ///< custom_mode from HEARTBEAT
 

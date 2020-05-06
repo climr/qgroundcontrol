@@ -3034,6 +3034,10 @@ bool Vehicle::weaponsArmed() const
 {
     return _weaponsarmed;
 }
+bool Vehicle::isSteeringFourWheel() const
+{
+    return _fourwheelsteering;
+}
 
 bool Vehicle::pauseVehicleSupported() const
 {
@@ -3944,8 +3948,11 @@ void Vehicle::set4WSteeringMode(bool value)
         return;
     }
 
+    _fourwheelsteering = value;
+
     if (value)
     {
+
         //true, we do want 4w steer
         //set SERVO1_FUNCTION (front) = 26 (GroundSteering)
         //set SERVO2_FUNCTION (rear) = 26 (GroundSteering)
@@ -3957,7 +3964,7 @@ void Vehicle::set4WSteeringMode(bool value)
             Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_FUNCTION");
             fact->setRawValue(QVariant(26));
         }
-        _say(tr("%1 : Four Wheel Steering Mode").arg(_vehicleIdSpeech()));
+        //_say(tr("%1 : Four Wheel Steering Mode").arg(_vehicleIdSpeech()));
         //qgcApp()->showMessage(QObject::tr("Four Wheel Steering Mode Enabled"));
     }
     else
@@ -3974,10 +3981,34 @@ void Vehicle::set4WSteeringMode(bool value)
             fact->setRawValue(QVariant(0));
         }
 
-        _say(tr("%1 : Two Wheel Steering Mode").arg(_vehicleIdSpeech()));
+        //_say(tr("%1 : Two Wheel Steering Mode").arg(_vehicleIdSpeech()));
         //qgcApp()->showMessage(QObject::tr("Two Wheel Steering Mode Enabled"));
     }
 
+    emit steeringModeChanged(_fourwheelsteering);
+}
+void Vehicle::setSlowSpeedMode(bool value)
+{
+    _slowspeedmode = value;
+
+    if (value)
+    {
+        //slow
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO3_MAX")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO3_MAX");
+            fact->setRawValue(QVariant(1600));
+        }
+    }
+    else
+    {
+        //fast
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO3_MAX")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO3_MAX");
+            fact->setRawValue(QVariant(2000));
+        }
+    }
+
+    emit speedModeChanged(_slowspeedmode);
 }
 
 void Vehicle::setWeaponsArmed(bool value)

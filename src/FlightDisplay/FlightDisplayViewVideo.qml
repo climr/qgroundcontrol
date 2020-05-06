@@ -24,7 +24,7 @@ Item {
     id:     root
     clip:   true
     property double _ar:                QGroundControl.videoManager.aspectRatio
-    property bool   _showGrid:          QGroundControl.settingsManager.videoSettings.gridLines.rawValue > 0
+    property bool   _showGrid:          true //QGroundControl.settingsManager.videoSettings.gridLines.rawValue > 0
     property var    _videoReceiver:     QGroundControl.videoManager.videoReceiver
     property var    _dynamicCameras:    activeVehicle ? activeVehicle.dynamicCameras : null
     property bool   _connected:         activeVehicle ? !activeVehicle.connectionLost : false
@@ -93,6 +93,8 @@ Item {
                         });
                     }
                 }
+                //replace the grid below with a custom cross hair type grid
+                /*
                 Rectangle {
                     color:  Qt.rgba(1,1,1,0.5)
                     height: parent.height
@@ -121,6 +123,38 @@ Item {
                     y:      parent.height * 0.66
                     visible: _showGrid && !QGroundControl.videoManager.fullScreen
                 }
+                */
+                //center reticle grid for patrios
+                Rectangle {  //radius makes this a circle
+                    color:  Qt.rgba(0,0,0,0)
+                    border.color:   Qt.rgba(1,1,1,0.5)
+                    height: parent.height * .05
+                    width:  parent.height * .05
+                    radius: width*0.5
+                    x:      parent.width * 0.5
+                    y:      parent.height * 0.5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible:  _showGrid
+
+                }
+                Rectangle {
+                    color:  Qt.rgba(1,1,1,0.5)
+                    height: parent.height
+                    width:  1
+                    x:      parent.width * 0.5
+                    visible: _showGrid
+
+                }
+                Rectangle {
+                    color:  Qt.rgba(1,1,1,0.5)
+                    width:  parent.width
+                    height: 1
+                    y:      parent.height * 0.5
+                    visible: _showGrid
+
+                }
+
             }
         }
         Loader {
