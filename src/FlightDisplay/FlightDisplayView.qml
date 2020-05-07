@@ -544,7 +544,6 @@ Item {
 
 
 
-
                 Rectangle {
                     width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
                     height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2

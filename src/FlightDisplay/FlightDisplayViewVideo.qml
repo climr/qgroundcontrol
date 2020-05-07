@@ -128,8 +128,34 @@ Item {
                 Rectangle {  //radius makes this a circle
                     color:  Qt.rgba(0,0,0,0)
                     border.color:   Qt.rgba(1,1,1,0.5)
-                    height: parent.height * .05
-                    width:  parent.height * .05
+                    height: parent.height * .1
+                    width:  parent.height * .1
+                    radius: width*1.0
+                    x:      parent.width * 0.5
+                    y:      parent.height * 0.5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible:  _showGrid
+
+                }
+                Rectangle {  //red dot makes this a circle
+                    color:  Qt.rgba(1,0,0,1)
+                    border.color:   Qt.rgba(1,0,0,1)
+                    height: 8
+                    width:  8
+                    radius: 8
+                    x:      parent.width * 0.5
+                    y:      parent.height * 0.5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible:  _showGrid
+
+                }
+                Rectangle {  //radius makes this a circle
+                    color:  Qt.rgba(0,0,0,0)
+                    border.color:   Qt.rgba(1,1,1,0.5)
+                    height: parent.height * .1
+                    width:  parent.height * .1
                     radius: width*0.5
                     x:      parent.width * 0.5
                     y:      parent.height * 0.5
@@ -140,17 +166,21 @@ Item {
                 }
                 Rectangle {
                     color:  Qt.rgba(1,1,1,0.5)
-                    height: parent.height
+                    height: parent.height * 0.5
                     width:  1
                     x:      parent.width * 0.5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
                     visible: _showGrid
 
                 }
                 Rectangle {
                     color:  Qt.rgba(1,1,1,0.5)
-                    width:  parent.width
+                    width:  parent.width * 0.5
                     height: 1
                     y:      parent.height * 0.5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
                     visible: _showGrid
 
                 }

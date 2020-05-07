@@ -233,7 +233,7 @@ void Joystick::_loadSettings()
     _axisFrequency  = settings.value(_axisFrequencySettingsKey, 25.0f).toFloat();
     _buttonFrequency= settings.value(_buttonFrequencySettingsKey, 5.0f).toFloat();
     _circleCorrection = settings.value(_circleCorrectionSettingsKey, false).toBool();
-    _gimbalEnabled  = settings.value(_gimbalSettingsKey, false).toBool();
+    _gimbalEnabled  = settings.value(_gimbalSettingsKey, true).toBool();
 
     _throttleMode   = static_cast<ThrottleMode_t>(settings.value(_throttleModeSettingsKey, ThrottleModeDownZero).toInt(&convertOk));
     badSettings |= !convertOk;

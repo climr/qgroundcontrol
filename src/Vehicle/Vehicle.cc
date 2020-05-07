@@ -3996,7 +3996,11 @@ void Vehicle::setSlowSpeedMode(bool value)
         //slow
         if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO3_MAX")) {
             Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO3_MAX");
-            fact->setRawValue(QVariant(1600));
+            fact->setRawValue(QVariant(2000));
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO3_MIN")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO3_MIN");
+            fact->setRawValue(QVariant(1050));
         }
     }
     else
@@ -4004,7 +4008,12 @@ void Vehicle::setSlowSpeedMode(bool value)
         //fast
         if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO3_MAX")) {
             Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO3_MAX");
-            fact->setRawValue(QVariant(2000));
+            fact->setRawValue(QVariant(2100));
+        }
+        //fast
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO3_MIN")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO3_MIN");
+            fact->setRawValue(QVariant(900));
         }
     }
 

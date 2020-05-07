@@ -283,7 +283,7 @@ protected:
     int*    _rgAxisValues           = nullptr;
     Calibration_t* _rgCalibration   = nullptr;
     ThrottleMode_t _throttleMode    = ThrottleModeDownZero;
-    bool    _negativeThrust         = false;
+    bool    _negativeThrust         = true;
     float   _exponential            = 0;
     bool    _accumulator            = false;
     bool    _deadband               = false;
