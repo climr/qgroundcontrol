@@ -43,12 +43,12 @@ Item {
 
     function getBatteryPercentageText() {
         if(activeVehicle) {
-            if(activeVehicle.battery.percentRemaining.value > 98.9) {
-                return "100%"
-            }
-            if(activeVehicle.battery.percentRemaining.value > 0.1) {
-                return activeVehicle.battery.percentRemaining.valueString + activeVehicle.battery.percentRemaining.units
-            }
+            //if(activeVehicle.battery.percentRemaining.value > 98.9) {
+            //    return "100%"
+            //}
+            //if(activeVehicle.battery.percentRemaining.value > 0.1) {
+            //    return activeVehicle.battery.percentRemaining.valueString + activeVehicle.battery.percentRemaining.units
+            // }
             if(activeVehicle.battery.voltage.value >= 0) {
                 return activeVehicle.battery.voltage.valueString + activeVehicle.battery.voltage.units
             }
