@@ -123,6 +123,13 @@ public:
     /// set into the link when it is added to LinkManager
     uint8_t mavlinkChannel(void) const;
 
+    quint32 sourceAddress(void) {return _sourceAddress;}
+    void setSourceAddress(qint32 source)
+    {
+        _sourceAddress = source;
+    }
+
+
     /// Returns whether this link is high latency or not. High latency links should only perform
     /// minimal communication with vehicle.
     ///     signals: highLatencyChanged
@@ -289,7 +296,8 @@ private:
     void stopMavlinkMessagesTimer();
 
     bool _mavlinkChannelSet;    ///< true: _mavlinkChannel has been set
-    uint8_t _mavlinkChannel;    ///< mavlink channel to use for this link, as used by mavlink_parse_char
+    uint8_t _mavlinkChannel;    ///< mavlink channel to use for this link, as used by mavlink_parse_char    
+    quint32 _sourceAddress;
     
     static const int _dataRateBufferSize = 20; ///< Specify how many data points to capture for data rate calculations.
     

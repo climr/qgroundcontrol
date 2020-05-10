@@ -206,6 +206,7 @@ signals:
 
     void setDoSetServo              (int channel, int value);
     void set4WSteeringMode          (bool value);
+    void setWeaponsPreArmed            (bool value);
     void setWeaponsArmed            (bool value);
     void setWeaponFire              (bool value);
     void setSlowSpeedMode           (bool value);
@@ -221,6 +222,7 @@ signals:
     void stepZoom                   (int direction);
     void stepCamera                 (int direction);
     void stepStream                 (int direction);
+    void gotoNextCamera             ();
     void triggerCamera              ();
     void startVideoRecord           ();
     void stopVideoRecord            ();
@@ -361,6 +363,7 @@ private:
     static const char* _buttonAction2WSteering;
     static const char* _buttonAction4WSteering;
     static const char* _buttonActionArmWeapons;
+    static const char* _buttonActionPreArmWeapons;
     static const char* _buttonActionFireWeapon;
     static const char* _buttonActionSlowSpeedMode;
     static const char* _buttonActionHighSpeedMode;

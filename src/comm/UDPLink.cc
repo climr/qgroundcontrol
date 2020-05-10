@@ -205,6 +205,7 @@ void UDPLink::readBytes()
     if (!_socket) {
         return;
     }
+
     QByteArray databuffer;
     while (_socket->hasPendingDatagrams())
     {
@@ -214,9 +215,13 @@ void UDPLink::readBytes()
         quint16 senderPort;
         //-- Note: This call is broken in Qt 5.9.3 on Windows. It always returns a blank sender and 0 for the port.
         _socket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+        //set the source address prior to processing bytes received
+        this->setSourceAddress(sender.toIPv4Address());
+
         databuffer.append(datagram);
         //-- Wait a bit before sending it over
         if(databuffer.size() > 10 * 1024) {
+
             emit bytesReceived(this, databuffer);
             databuffer.clear();
         }
@@ -289,7 +294,7 @@ bool UDPLink::_hardwareConnect()
     _socket->setProxy(QNetworkProxy::NoProxy);
     _connectState = _socket->bind(host, _udpConfig->localPort(), QAbstractSocket::ReuseAddressHint | QUdpSocket::ShareAddress);
     if (_connectState) {
-        _socket->joinMulticastGroup(QHostAddress("224.0.0.1"));
+        _socket->joinMulticastGroup(QHostAddress("224.10.10.10"));
         //-- Make sure we have a large enough IO buffers
 #ifdef __mobile__
         _socket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption,     64 * 1024);

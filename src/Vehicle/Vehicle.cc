@@ -101,6 +101,7 @@ Vehicle::Vehicle(LinkInterface*             link,
                  FirmwarePluginManager*     firmwarePluginManager,
                  JoystickManager*           joystickManager)
     : FactGroup(_vehicleUIUpdateRateMSecs, ":/json/Vehicle/VehicleFact.json")
+    , _sourceAddress(link->sourceAddress())
     , _id(vehicleId)
     , _defaultComponentId(defaultComponentId)
     , _active(false)
@@ -297,6 +298,12 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(&_csvLogTimer, &QTimer::timeout, this, &Vehicle::_writeCsvLine);
     _csvLogTimer.start(1000);
     _lastBatteryAnnouncement.start();
+
+    //keep list of local interfaces
+    for (const QHostAddress &address: QNetworkInterface::allAddresses()) {
+        _localAddress.append(QHostAddress(address));
+    }
+    _sourceAddress = link->sourceAddress();
 }
 
 // Disconnected Vehicle for offline editing
@@ -306,6 +313,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
                  QObject*                   parent)
     : FactGroup(_vehicleUIUpdateRateMSecs, ":/json/Vehicle/VehicleFact.json", parent)
     , _id(0)
+    , _sourceAddress(0)
     , _defaultComponentId(MAV_COMP_ID_ALL)
     , _active(false)
     , _offlineEditingVehicle(true)
@@ -2398,6 +2406,7 @@ void Vehicle::setActive(bool active)
 {
     if (_active != active) {
         _active = active;
+        _setCameraPosition(0);  //start off with first camera selected
         _startJoystick(false);
         emit activeChanged(_active);
     }
@@ -3032,7 +3041,7 @@ bool Vehicle::guidedModeSupported() const
 }
 bool Vehicle::weaponsArmed() const
 {
-    return _weaponsarmed;
+    return _weaponsArmed;
 }
 bool Vehicle::isSteeringFourWheel() const
 {
@@ -3987,6 +3996,52 @@ void Vehicle::set4WSteeringMode(bool value)
 
     emit steeringModeChanged(_fourwheelsteering);
 }
+void Vehicle::_setCameraPosition(int c)
+{
+    _currentCamera = c;
+    MAV_COMPONENT cam;
+    if (c==0) cam = MAV_COMP_ID_CAMERA;
+    else if (c==1)  cam = MAV_COMP_ID_CAMERA2;
+    else cam = MAV_COMP_ID_CAMERA3;
+
+    emit currentCameraChanged(c);
+    qDebug() << "Changing to camera" << c << cam;
+    //send command to set camera
+    sendMavCommand(cam,
+                   MAV_CMD_SET_CAMERA_MODE,
+                   false,
+                   0,
+                   CAMERA_MODE_VIDEO,
+                   0,
+                   0,
+                   0,
+                   0,
+                   0);
+}
+void Vehicle::gotoNextCamera()
+{
+    int c = _currentCamera + 1;
+    if(c >= 3) c = 0;
+    _currentCamera = c;
+    MAV_COMPONENT cam;
+    if (c==0) cam = MAV_COMP_ID_CAMERA;
+    else if (c==1)  cam = MAV_COMP_ID_CAMERA2;
+    else cam = MAV_COMP_ID_CAMERA3;
+
+    emit currentCameraChanged(c);
+    qDebug() << "Changing to camera" << c << cam;
+    //send command to set camera
+    sendMavCommand(cam,
+                   MAV_CMD_SET_CAMERA_MODE,
+                   false,
+                   0,
+                   CAMERA_MODE_VIDEO,
+                   0,
+                   0,
+                   0,
+                   0,
+                   0);
+}
 void Vehicle::setSlowSpeedMode(bool value)
 {
     _slowspeedmode = value;
@@ -4074,24 +4129,30 @@ void Vehicle::setSlowSpeedMode(bool value)
     emit speedModeChanged(_slowspeedmode);
 }
 
-void Vehicle::setWeaponsArmed(bool value)
+void Vehicle::setWeaponsPreArmed(bool value)
 {
-     _weaponsarmed = value;
-
+    _weaponsPreArmed = value;
     if (value)
         _say(tr("%1 : Weapon System Armed").arg(_vehicleIdSpeech()));
     else
         _say(tr("%1 : Weapon System Disarmed").arg(_vehicleIdSpeech()));
+     emit weaponsPreArmedChanged(_weaponsPreArmed);
+}
 
-    emit weaponsArmedChanged(_weaponsarmed);
+void Vehicle::setWeaponsArmed(bool value)
+{
+     _weaponsArmed = value;
+
+
+    emit weaponsArmedChanged(_weaponsArmed);
 }
 
 void Vehicle::setWeaponFire(bool value)
 {
-    int servoChannel = 8;
+    int servoChannel = 8;  //todo, move this to settings
     int servoHigh = 2000;
     int servoLow = 900;
-    if (!value)
+    if (!value)  //false
     {
         sendMavCommand(defaultComponentId(),
                        MAV_CMD_DO_SET_SERVO,
@@ -4105,7 +4166,7 @@ void Vehicle::setWeaponFire(bool value)
                        0);
         return;
     }
-    if (_weaponsarmed && value)
+    if (_weaponsPreArmed && _weaponsArmed && value)
     {
          //set servo high
          sendMavCommand(defaultComponentId(),
@@ -4118,7 +4179,7 @@ void Vehicle::setWeaponFire(bool value)
                         0,
                         0,
                         0);
-          _say(tr("%1 : Fired").arg(_vehicleIdSpeech()));
+          _say(tr("%1 : Fire").arg(_vehicleIdSpeech()));
     }
 
 

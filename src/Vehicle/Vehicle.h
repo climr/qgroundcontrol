@@ -22,6 +22,8 @@
 #include "UASMessageHandler.h"
 #include "SettingsFact.h"
 #include "QGCMapCircle.h"
+#include <QHostAddress>
+#include <QList>
 
 class UAS;
 class UASInterface;
@@ -529,10 +531,15 @@ public:
         CheckListFailed,
     };
     Q_ENUM(CheckList)
+     Q_PROPERTY(bool                weaponsPreArmed         READ weaponsPreArmed                                        NOTIFY weaponsPreArmedChanged)
     Q_PROPERTY(bool                 weaponsArmed            READ weaponsArmed                                           NOTIFY weaponsArmedChanged)
     Q_PROPERTY(bool                 fourWheelSteering       READ fourWheelSteering                                      NOTIFY steeringModeChanged)
     Q_PROPERTY(bool                 slowSpeedMode           READ slowSpeedMode                                          NOTIFY speedModeChanged)
     Q_PROPERTY(int                  id                      READ id                                                     CONSTANT)
+    Q_PROPERTY(quint32              sourceAddress           READ sourceAddress                                          CONSTANT)
+    Q_PROPERTY(QString              sourceAddressPretty     READ sourceAddressPretty                                    CONSTANT)
+    Q_PROPERTY(quint32              videoAddress            READ videoAddress                                           CONSTANT)
+    Q_PROPERTY(QString              videoAddressPretty      READ videoAddressPretty                                     CONSTANT)
     Q_PROPERTY(AutoPilotPlugin*     autopilot               MEMBER _autopilotPlugin                                     CONSTANT)
     Q_PROPERTY(QGeoCoordinate       coordinate              READ coordinate                                             NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate       homePosition            READ homePosition                                           NOTIFY homePositionChanged)
@@ -618,6 +625,7 @@ public:
     Q_PROPERTY(QVariantList         toolBarIndicators       READ toolBarIndicators                                      NOTIFY toolBarIndicatorsChanged)
     Q_PROPERTY(bool              initialPlanRequestComplete READ initialPlanRequestComplete                             NOTIFY initialPlanRequestCompleteChanged)
     Q_PROPERTY(QVariantList         staticCameraList        READ staticCameraList                                       CONSTANT)
+    Q_PROPERTY(int                  currentCamera           READ currentCamera                                          NOTIFY currentCameraChanged)
     Q_PROPERTY(QGCCameraManager*    dynamicCameras          READ dynamicCameras                                         NOTIFY dynamicCamerasChanged)
     Q_PROPERTY(QString              hobbsMeter              READ hobbsMeter                                             NOTIFY hobbsMeterChanged)
     Q_PROPERTY(bool                 vtolInFwdFlight         READ vtolInFwdFlight        WRITE setVtolInFwdFlight        NOTIFY vtolInFwdFlightChanged)
@@ -810,8 +818,10 @@ public:
 
     void set4WSteeringMode(bool value);
     void setWeaponsArmed(bool value);
+    void setWeaponsPreArmed(bool value);
     void setWeaponFire(bool value);
     void setSlowSpeedMode(bool value);
+    void gotoNextCamera();
     int joystickMode();
     void setJoystickMode(int mode);
 
@@ -827,6 +837,43 @@ public:
 
     // Property accesors
     int id() { return _id; }
+    quint32 sourceAddress() { return _sourceAddress; }
+
+    QString sourceAddressPretty()
+    {
+        if (_sourceAddress == 0)
+            return "unknown";
+        QHostAddress ip4Address(_sourceAddress);
+        return ip4Address.toString();
+    }
+
+    quint32 videoAddress() {
+        //calculate the correct multicast video address to use
+        for (const QHostAddress &address: _localAddress) {
+            if (address == QHostAddress(_sourceAddress)) {
+                    return 0;
+            }
+        }
+        quint32 mcast_upper = 0xE001 << 16;     //224.1
+        return (mcast_upper | ((quint16)_sourceAddress));
+
+    }
+    QString videoAddressPretty()
+    {
+
+        for (const QHostAddress &address: _localAddress) {
+            if (address == QHostAddress(_sourceAddress)) {
+                    qDebug() << "returning 224.0.1.1";
+                    return "224.1.1.1";
+            }
+        }
+            // This is a local address of the same host
+        quint32 mcast_upper = 0xE001 << 16;     //224.1
+        QHostAddress ip4Address((quint32)(mcast_upper | ((quint16)_sourceAddress)));
+        qDebug() << "returning " << ip4Address.toString();
+        return ip4Address.toString();
+
+    }
 
 
     MAV_AUTOPILOT firmwareType() const { return _firmwareType; }
@@ -861,7 +908,8 @@ public:
     QGeoCoordinate homePosition();
 
     bool armed      () { return _armed; }
-    bool weaponsArmed      () { return _weaponsarmed; }
+    bool weaponsArmed      () { return _weaponsArmed; }
+    bool weaponsPreArmed    () { return _weaponsPreArmed; }
     bool slowSpeedMode  () { return _slowspeedmode;}
     bool fourWheelSteering       () { return _fourwheelsteering; }
     void setArmed   (bool armed);
@@ -1096,6 +1144,7 @@ public:
     uint64_t capabilityBits     () const { return _capabilityBits; }    // Change signalled by capabilityBitsChanged
 
     QGCCameraManager*           dynamicCameras      () { return _cameras; }
+    int                         currentCamera       () {return _currentCamera;}
     QString                     hobbsMeter          ();
 
     /// @true: When flying a mission the vehicle is always facing towards the next waypoint
@@ -1192,6 +1241,8 @@ signals:
     void flowImageIndexChanged          ();
     void rcRSSIChanged                  (int rcRSSI);
     void weaponsArmedChanged            (bool value);
+    void weaponsPreArmedChanged         (bool value);
+    void currentCameraChanged           (int camera);
     void steeringModeChanged            (bool value);
     void speedModeChanged               (bool value);
     void telemetryRRSSIChanged          (int value);
@@ -1338,6 +1389,7 @@ private:
 #endif
     void _handleCameraImageCaptured     (const mavlink_message_t& message);
     void _handleADSBVehicle             (const mavlink_message_t& message);
+    void _setCameraPosition             (int value);
     void _missionManagerError           (int errorCode, const QString& errorMsg);
     void _geoFenceManagerError          (int errorCode, const QString& errorMsg);
     void _rallyPointManagerError        (int errorCode, const QString& errorMsg);
@@ -1364,11 +1416,11 @@ private:
     void _flightTimerStop               ();
     void _batteryStatusWorker           (int batteryId, double voltage, double current, double batteryRemainingPct);
 
-
+    quint32  _sourceAddress;
     int     _id;                    ///< Mavlink system id
     int     _defaultComponentId;
     bool    _active;
-    bool    _offlineEditingVehicle; ///< This Vehicle is a "disconnected" vehicle for ui use while offline editing
+    bool    _offlineEditingVehicle; ///< This Vehicle is a "disconnected" vehicle for ui use while offline editing    
 
     MAV_AUTOPILOT       _firmwareType;
     MAV_TYPE            _vehicleType;
@@ -1481,8 +1533,10 @@ private:
 #endif
 
     bool    _armed;         ///< true: vehicle is armed
-    bool    _weaponsarmed = false;  ///true: weapon system is armed
+    bool    _weaponsArmed = false;  ///true: weapon system is armed
+    bool    _weaponsPreArmed = false;  ///true: weapon system is pre armed
     bool    _slowspeedmode = false;    ///true: slow speed mode is on
+    int     _currentCamera = 0;
     bool    _fourwheelsteering = false;  ///true: 4wsteering is engaged
     bool    _highspeedmode = false; ///true: high speed mode is engaged
     uint8_t _base_mode;     ///< base_mode from HEARTBEAT
@@ -1636,5 +1690,7 @@ private:
     static const char* _settingsGroup;
     static const char* _joystickModeSettingsKey;
     static const char* _joystickEnabledSettingsKey;
+
+    QList<QHostAddress>     _localAddress;
 
 };

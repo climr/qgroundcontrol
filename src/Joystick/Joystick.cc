@@ -68,10 +68,12 @@ const char* Joystick::_buttonActionGimbalRight =        QT_TR_NOOP("Gimbal Right
 const char* Joystick::_buttonActionGimbalCenter =       QT_TR_NOOP("Gimbal Center");
 const char* Joystick::_buttonAction2WSteering =         QT_TR_NOOP("2 Wheel Steering Mode");
 const char* Joystick::_buttonAction4WSteering =         QT_TR_NOOP("4 Wheel Steering Mode");
+const char* Joystick::_buttonActionPreArmWeapons =      QT_TR_NOOP("Pre-Arm Weapon System");
 const char* Joystick::_buttonActionArmWeapons =         QT_TR_NOOP("Arm Weapon System");
 const char* Joystick::_buttonActionFireWeapon =         QT_TR_NOOP("Fire Weapon System");
 const char* Joystick::_buttonActionSlowSpeedMode =         QT_TR_NOOP("Slow Speed Mode");
 const char* Joystick::_buttonActionHighSpeedMode =         QT_TR_NOOP("High Speed Mode");
+
 
 const char* Joystick::_rgFunctionSettingsKey[Joystick::maxFunction] = {
     "RollAxis",
@@ -733,10 +735,12 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::gimbalYawStep,      _activeVehicle, &Vehicle::gimbalYawStep);
             disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
-            disconnect(this, &Joystick::set4WSteeringMode, _activeVehicle, &Vehicle::set4WSteeringMode);
+            disconnect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
+            disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
             disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
+            disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
         }
         // Always set up the new vehicle
         _activeVehicle = vehicle;
@@ -762,9 +766,11 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             connect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
             connect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
+            connect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
             connect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
             connect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             connect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
+            connect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
 
             // FIXME: ****
             //connect(this, &Joystick::buttonActionTriggered, uas, &UAS::triggerAction);
@@ -792,9 +798,11 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
             disconnect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
+            disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
             disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
+            disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
 
         }
         // FIXME: ****
@@ -1069,7 +1077,10 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if(action == _buttonActionNextStream || action == _buttonActionPreviousStream) {
         if (buttonDown) emit stepStream(action == _buttonActionNextStream ? 1 : -1);
     } else if(action == _buttonActionNextCamera || action == _buttonActionPreviousCamera) {
-        if (buttonDown) emit stepCamera(action == _buttonActionNextCamera ? 1 : -1);
+       // if (buttonDown) emit stepCamera(action == _buttonActionNextCamera ? 1 : -1);
+         if (buttonDown) {
+             emit gotoNextCamera();
+         }
     } else if(action == _buttonActionTriggerCamera) {
         if (buttonDown) emit triggerCamera();
     } else if(action == _buttonActionStartVideoRecord) {
@@ -1097,7 +1108,12 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if(action == _buttonAction4WSteering) {
         if (buttonDown) emit set4WSteeringMode(true);
     }
-    else if(action == _buttonActionArmWeapons) {
+    else if(action == _buttonActionPreArmWeapons) {  //this sets pre-arm high.  to fire pre-arm and arm must be set
+            //if buttonDown
+           if (buttonDown) emit setWeaponsPreArmed(true);  //arm when button held down
+           else emit setWeaponsPreArmed(false);
+       }
+    else if(action == _buttonActionArmWeapons) {  //this sets pre-arm high.  to fire pre-arm and arm must be set
             //if buttonDown
            if (buttonDown) emit setWeaponsArmed(true);  //arm when button held down
            else emit setWeaponsArmed(false);
@@ -1182,27 +1198,28 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
             _assignableButtonActions.append(new AssignableButtonAction(this, mode));
         }
     }
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLFixedWing));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLMultiRotor));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomIn, true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomOut, true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomIn,  true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomOut, true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextStream));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousStream));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLFixedWing));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLMultiRotor));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomIn, true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomOut, true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomIn,  true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomOut, true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextStream));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousStream));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextCamera));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousCamera));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionTriggerCamera));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousCamera));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionTriggerCamera));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStartVideoRecord));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStopVideoRecord));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleVideoRecord));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalDown,    true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalUp,      true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalLeft,    true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalRight,   true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalCenter));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalDown,    true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalUp,      true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalLeft,    true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalRight,   true));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalCenter));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonAction2WSteering));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonAction4WSteering));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreArmWeapons));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArmWeapons));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionFireWeapon));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionSlowSpeedMode));

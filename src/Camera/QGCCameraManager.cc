@@ -495,6 +495,7 @@ QGCCameraManager::_stopZoom()
 void
 QGCCameraManager::_stepCamera(int direction)
 {
+
     if(_lastCameraChange.elapsed() > 1000) {
         _lastCameraChange.start();
         qCDebug(CameraManagerLog) << "Step Camera" << direction;
@@ -503,6 +504,7 @@ QGCCameraManager::_stepCamera(int direction)
         if(c >= _cameras.count()) c = 0;
         setCurrentCamera(c);
     }
+
 }
 
 //-----------------------------------------------------------------------------

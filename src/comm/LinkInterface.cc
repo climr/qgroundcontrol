@@ -32,6 +32,7 @@ bool LinkInterface::link_active(int vehicle_id) const
     }
 }
 
+
 /// mavlink channel to use for this link, as used by mavlink_parse_char. The mavlink channel is only
 /// set into the link when it is added to LinkManager
 uint8_t LinkInterface::mavlinkChannel(void) const

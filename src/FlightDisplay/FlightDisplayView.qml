@@ -543,86 +543,107 @@ Item {
         }
 
 
-
-                Rectangle {
-                    width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
-                    height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2
-                    radius: ScreenTools.defaultFontPixelHeight * 0.5
-                    color:  Qt.rgba(0,0,0,0.5) //qgcPal.window
-                    border.color:   qgcPal.text
-                    anchors.right:              parent.right
-                    anchors.top:             parent.top
-                    anchors.topMargin:       ScreenTools.toolbarHeight + _margins
-                    anchors.rightMargin:       ScreenTools.defaultFontPixelHeight * 2
-                    visible:        activeVehicle && !QGroundControl.videoManager.fullScreen
-                    z:                          _mapAndVideo.z + 5
-                    //anchors.horizontalCenter:   parent.horizontalCenter
-
-                    Column {
-                        id:                 patriosCol
-                        spacing:            ScreenTools.defaultFontPixelHeight * 0.5
-                        width:              Math.max(patriosGrid.width, patriosLabel.width)
-                        anchors.margins:    ScreenTools.defaultFontPixelHeight
-                        anchors.centerIn:   parent
-
-                        QGCLabel {
-                            id:             patriosLabel
-                            text:           qsTr("Vehicle Status")
-                            color:          "white"
-                            font.family:    ScreenTools.demiboldFontFamily
-                            anchors.horizontalCenter: parent.horizontalCenter
-                        }
-
-                        GridLayout {
-                            id:                 patriosGrid
-                            anchors.margins:    ScreenTools.defaultFontPixelHeight
-                            columnSpacing:      ScreenTools.defaultFontPixelWidth
-                            columns:            2
-                            anchors.horizontalCenter: parent.horizontalCenter
-
-                            QGCLabel {
-                                text: qsTr("Steering Mode:")
-                                color: "white"
-                            }
-                            QGCLabel {
-                                //text: qsTr("4W")
-                                text: activeVehicle.fourWheelSteering ? "4W" : "2W";
-                                //text: activeVehicle.weaponsArmed
-                                //text: (activeVehicle && activeVehicle.battery.voltage.value !== -1) ? (activeVehicle.battery.voltage.valueString + " " + activeVehicle.battery.voltage.units) : "N/A"
-                                color: "white"
-                            }
-                            QGCLabel {
-                                text: qsTr("Speed Mode:")
-                                color: "white"
-                            }
-                            QGCLabel {
-                                //text: (activeVehicle && activeVehicle.battery.mahConsumed.value !== -1) ? (activeVehicle.battery.mahConsumed.valueString + " " + activeVehicle.battery.mahConsumed.units) : "N/A"
-                                text: activeVehicle.slowSpeedMode ? "Slow" : "Fast";
-                                color: "white"
-                            }
-                            QGCLabel {
-                                text: qsTr("Weapons:")
-                                color: "white"
-                            }
-                            QGCLabel {
-                                //text: (activeVehicle && activeVehicle.battery.mahConsumed.value !== -1) ? (activeVehicle.battery.mahConsumed.valueString + " " + activeVehicle.battery.mahConsumed.units) : "N/A"
-                                text: activeVehicle.weaponsArmed ? "ARMED" : "Disarmed"
-                                color: activeVehicle.weaponsArmed ? "red" : "white"
-                            }
-                        }
-                    }
-                }
+        //Nightcrawler/Patrios specific feedback panel
 
         Rectangle {
-            id:             test_patrios
+            width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
+            height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2
+            radius: ScreenTools.defaultFontPixelHeight * 0.5
+            color:  Qt.rgba(0,0,0,0.5)
+            border.color:   qgcPal.text
+            anchors.right:              parent.right
+            anchors.bottom:             parent.bottom
+            anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+            anchors.rightMargin:       ScreenTools.defaultFontPixelHeight * 2
+            visible:        activeVehicle && !QGroundControl.videoManager.fullScreen
+            z:                          _mapAndVideo.z + 5
+
+            Column {
+                id:                 patriosCol
+                spacing:            ScreenTools.defaultFontPixelHeight * 0.5
+                width:              Math.max(patriosGrid.width, patriosLabel.width)
+                anchors.margins:    ScreenTools.defaultFontPixelHeight
+                anchors.centerIn:   parent
+
+                QGCLabel {
+                    id:             patriosLabel
+                    text:           qsTr("Vehicle Status")
+                    color:          "white"
+                    font.family:    ScreenTools.demiboldFontFamily
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                GridLayout {
+                    id:                 patriosGrid
+                    anchors.margins:    ScreenTools.defaultFontPixelHeight
+                    columnSpacing:      ScreenTools.defaultFontPixelWidth
+                    columns:            2
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    QGCLabel {
+                        text: qsTr("Active Camera:")
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: getCamName()
+                        color: "white"
+                        function getCamName() {
+                            //-- Fit Width or Stretch
+                            if(activeVehicle.currentCamera === 0)
+                                return qsTr("Front")
+                            else if (activeVehicle.currentCamera === 1)
+                                return qsTr("Thermal")
+                            else
+                                return qsTr("Rear")
+                            }
+
+                    }
+
+                    QGCLabel {
+                        text: qsTr("Steering Mode:")
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: activeVehicle.fourWheelSteering ? "4W" : "2W";
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: qsTr("Speed Mode:")
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: activeVehicle.slowSpeedMode ? "Slow" : "Fast";
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: qsTr("Weapons:")
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: getArmStatus()
+                        color: (activeVehicle.weaponsArmed || activeVehicle.weaponsPreArmed) ? "red" : "white"
+                         function getArmStatus() {
+                             if (activeVehicle.weaponsArmed && activeVehicle.weaponsPreArmed)
+                                 return qsTr("FIRE SEQ 1 of 2")
+                             if (activeVehicle.weaponsPreArmed)
+                                 return qsTr("ARMED")
+                             else
+                                 return qsTr("Disarmed")
+                         }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            id:             nc_weapon_arm
             anchors.bottom:             parent.bottom
             anchors.bottomMargin:       ScreenTools.defaultFontPixelHeight * 2
             anchors.horizontalCenter:   parent.horizontalCenter
             color:          Qt.rgba(0,0,0,0.75)
-            visible:        (activeVehicle) ? activeVehicle.weaponsArmed : false
+            visible:        (activeVehicle) ? activeVehicle.weaponsPreArmed  : false
             z:                          _mapAndVideo.z + 5
-            QGCLabel {
-                //text:               (activeVehicle && activeVehicle.battery.voltage.value !== -1) ? (activeVehicle.battery.voltage.valueString + " " + activeVehicle.battery.voltage.units) : "N/A"
+            QGCLabel {                
                 text:               "WEAPONS ARMED!"
                 font.family:        ScreenTools.demiboldFontFamily
                 color:              "red"

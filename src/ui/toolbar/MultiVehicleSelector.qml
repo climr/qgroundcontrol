@@ -26,7 +26,7 @@ QGCComboBox {
     sizeToContents:         true
     model:                  _vehicleModel
 
-    property bool showIndicator: _multipleVehicles
+    property bool showIndicator: true //_multipleVehicles
 
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property bool   _multipleVehicles:  _activeVehicle ? QGroundControl.multiVehicleManager.vehicles.count > 1 : false
@@ -42,16 +42,17 @@ QGCComboBox {
     function _updateVehicleModel() {
         var newCurrentIndex = -1
         var newModel = [ ]
-        if (_multipleVehicles) {
+        //if (_multipleVehicles) {
             for (var i = 0; i < QGroundControl.multiVehicleManager.vehicles.count; i++) {
                 var vehicle = QGroundControl.multiVehicleManager.vehicles.get(i)
-                newModel.push(qsTr("Vehicle") + " " + vehicle.id)
+
+                newModel.push(qsTr("Vehicle") + " " + vehicle.id + " ("+ vehicle.sourceAddressPretty + ")")
 
                 if (vehicle.id === _activeVehicle.id) {
                     newCurrentIndex = i
                 }
             }
-        }
+       // }
         currentIndex = -1
         _vehicleModel = newModel
         currentIndex = newCurrentIndex

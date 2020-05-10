@@ -356,7 +356,8 @@ VideoManager::_updateSettings()
                     _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceTCP);
                     break;
                 case VIDEO_STREAM_TYPE_RTPUDP:
-                    _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri()));
+                   // _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri()));
+                    _videoReceiver->setUri(QStringLiteral("udp://224.0.1.1:%1").arg(pInfo->uri()));
                     _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
                     break;
                 case VIDEO_STREAM_TYPE_MPEG_TS_H264:
@@ -392,7 +393,27 @@ VideoManager::_updateSettings()
     }
     QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264)
-        _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+    {
+        //convert active vehicles's source address into multicast
+        //
+        //_videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+        if (_activeVehicle)
+        {
+            //if (_activeVehicle->active())
+           // {
+                 _videoReceiver->setUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->udpPort()->rawValue().toInt()));
+                 //_videoReceiver->setUri(QStringLiteral("udp://224.0.1.1:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+                 qDebug() << "Setting video URI: " << QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->udpPort()->rawValue().toInt());
+            //}
+        }
+        else
+        {
+            qDebug() << "No vehicle yet, using 0.0.0.0 for video";
+            _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+        }
+
+        //_videoReceiver->setUri(QStringLiteral("udp://224.0.1.1:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+    }
     else if (source == VideoSettings::videoSourceUDPH265)
         _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceMPEGTS)
@@ -420,6 +441,7 @@ VideoManager::restartVideo()
 void
 VideoManager::_setActiveVehicle(Vehicle* vehicle)
 {
+    qDebug() << "Active vehicle changed " << vehicle->videoAddressPretty();
     if(_activeVehicle) {
         disconnect(_activeVehicle, &Vehicle::connectionLostChanged, this, &VideoManager::_connectionLostChanged);
         if(_activeVehicle->dynamicCameras()) {

@@ -24,7 +24,7 @@ Item {
     id:     root
     clip:   true
     property double _ar:                QGroundControl.videoManager.aspectRatio
-    property bool   _showGrid:          true //QGroundControl.settingsManager.videoSettings.gridLines.rawValue > 0
+    property bool   _showGrid:          activeVehicle.currentCamera === 0 ? true : false  //QGroundControl.settingsManager.videoSettings.gridLines.rawValue > 0
     property var    _videoReceiver:     QGroundControl.videoManager.videoReceiver
     property var    _dynamicCameras:    activeVehicle ? activeVehicle.dynamicCameras : null
     property bool   _connected:         activeVehicle ? !activeVehicle.connectionLost : false
@@ -128,9 +128,9 @@ Item {
                 Rectangle {  //radius makes this a circle
                     color:  Qt.rgba(0,0,0,0)
                     border.color:   Qt.rgba(1,1,1,0.5)
-                    height: parent.height * .1
-                    width:  parent.height * .1
-                    radius: width*1.0
+                    height: parent.height * .5
+                    width:  parent.height * .5
+                    radius: width
                     x:      parent.width * 0.5
                     y:      parent.height * 0.5
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -138,7 +138,7 @@ Item {
                     visible:  _showGrid
 
                 }
-                Rectangle {  //red dot makes this a circle
+                Rectangle {  //red dot
                     color:  Qt.rgba(1,0,0,1)
                     border.color:   Qt.rgba(1,0,0,1)
                     height: 8
@@ -151,12 +151,13 @@ Item {
                     visible:  _showGrid
 
                 }
-                Rectangle {  //radius makes this a circle
+                /*
+                Rectangle {  //optional smaller circle
                     color:  Qt.rgba(0,0,0,0)
                     border.color:   Qt.rgba(1,1,1,0.5)
                     height: parent.height * .1
                     width:  parent.height * .1
-                    radius: width*0.5
+                    radius: width
                     x:      parent.width * 0.5
                     y:      parent.height * 0.5
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -164,9 +165,9 @@ Item {
                     visible:  _showGrid
 
                 }
-                Rectangle {
+                Rectangle {  //optional vertical line
                     color:  Qt.rgba(1,1,1,0.5)
-                    height: parent.height * 0.5
+                    height: parent.height * 0.7
                     width:  1
                     x:      parent.width * 0.5
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -174,7 +175,7 @@ Item {
                     visible: _showGrid
 
                 }
-                Rectangle {
+                Rectangle {  //optional horizontal line
                     color:  Qt.rgba(1,1,1,0.5)
                     width:  parent.width * 0.5
                     height: 1
@@ -183,7 +184,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: _showGrid
 
-                }
+                }*/
 
             }
         }
