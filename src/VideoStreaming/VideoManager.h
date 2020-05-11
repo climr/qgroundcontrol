@@ -79,6 +79,10 @@ public:
     // Override from QGCTool
     virtual void        setToolbox          (QGCToolbox *toolbox);
 
+    virtual void toggleLocalVideoRecord();
+    void _say                           (const QString& text);
+    QString _vehicleIdSpeech            ();
+
     Q_INVOKABLE void startVideo     ();
     Q_INVOKABLE void stopVideo      ();
 

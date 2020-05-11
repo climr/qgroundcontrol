@@ -189,5 +189,8 @@
         <file alias="Yield.svg">src/ui/toolbar/Images/Yield.svg</file>
         <file alias="ZoomMinus.svg">src/FlightMap/Images/ZoomMinus.svg</file>
         <file alias="ZoomPlus.svg">src/FlightMap/Images/ZoomPlus.svg</file>
+        <file alias="H31LogoWhite.svg">src/ui/toolbar/Images/H31LogoWhite.svg</file>
+        <file alias="amarok_indoor_brand.png">src/ui/toolbar/Images/amarok_indoor_brand.png</file>
+        <file alias="amarok_outdoor_brand.png">src/ui/toolbar/Images/amarok_outdoor_brand.png</file>
     </qresource>
 </RCC>

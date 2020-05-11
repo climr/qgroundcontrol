@@ -531,7 +531,7 @@ public:
         CheckListFailed,
     };
     Q_ENUM(CheckList)
-     Q_PROPERTY(bool                weaponsPreArmed         READ weaponsPreArmed                                        NOTIFY weaponsPreArmedChanged)
+    Q_PROPERTY(bool                 weaponsPreArmed         READ weaponsPreArmed                                        NOTIFY weaponsPreArmedChanged)
     Q_PROPERTY(bool                 weaponsArmed            READ weaponsArmed                                           NOTIFY weaponsArmedChanged)
     Q_PROPERTY(bool                 fourWheelSteering       READ fourWheelSteering                                      NOTIFY steeringModeChanged)
     Q_PROPERTY(bool                 slowSpeedMode           READ slowSpeedMode                                          NOTIFY speedModeChanged)

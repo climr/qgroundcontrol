@@ -250,10 +250,13 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
         // name. Also we want to run unit tests with clean settings every time.
         setApplicationName(QString("%1_unittest").arg(QGC_APPLICATION_NAME));
     } else {
-        setApplicationName(QGC_APPLICATION_NAME);
+        //setApplicationName(QGC_APPLICATION_NAME);
+        setApplicationName("horizon31 GCS");  //for some reason it is not pulling in the application name from the .pro file
     }
-    setOrganizationName(QGC_ORG_NAME);
-    setOrganizationDomain(QGC_ORG_DOMAIN);
+    //setOrganizationName(QGC_ORG_NAME);
+    setOrganizationName("horizon31");
+    //setOrganizationDomain(QGC_ORG_DOMAIN);
+    setOrganizationDomain("horizon31.com");
 
     this->setApplicationVersion(QString(GIT_VERSION));
 

@@ -47,6 +47,7 @@ Rectangle {
 
     property string _videoSource:               QGroundControl.settingsManager.videoSettings.videoSource.value
     property bool   _isGst:                     QGroundControl.videoManager.isGStreamer
+    property bool   _isMulticastUDP264:         _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.multicastUdp264VideoSource
     property bool   _isUDP264:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.udp264VideoSource
     property bool   _isUDP265:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.udp265VideoSource
     property bool   _isRTSP:                    _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.rtspVideoSource
@@ -55,6 +56,8 @@ Rectangle {
 
     property string gpsDisabled: "Disabled"
     property string gpsUdpPort:  "UDP Port"
+
+
 
     readonly property real _internalWidthRatio: 0.8
 
@@ -979,15 +982,23 @@ Rectangle {
                                 fact:                   QGroundControl.settingsManager.videoSettings.videoSource
                                 visible:                QGroundControl.settingsManager.videoSettings.videoSource.visible
                             }
+                            QGCLabel {
+                                text:       qsTr("Receive UDP video multicast to 224.1.x.x where the last two octets match the last two octects of the vehicle's UDP telemetry source ip.")
+                                wrapMode:   Text.WordWrap
+                                font.pointSize:       ScreenTools.smallFontPointSize
+                                visible: _isMulticastUDP264
+                                Layout.maximumWidth:  videoSource.width * 1.5
+                                Layout.columnSpan: 2
+                            }
 
                             QGCLabel {
                                 text:                   qsTr("UDP Port")
-                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS)  && QGroundControl.settingsManager.videoSettings.udpPort.visible
+                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP264)  && QGroundControl.settingsManager.videoSettings.udpPort.visible
                             }
                             FactTextField {
                                 Layout.preferredWidth:  _comboFieldWidth
                                 fact:                   QGroundControl.settingsManager.videoSettings.udpPort
-                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS) && QGroundControl.settingsManager.videoSettings.udpPort.visible
+                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP264) && QGroundControl.settingsManager.videoSettings.udpPort.visible
                             }
 
                             QGCLabel {
@@ -1100,7 +1111,7 @@ Rectangle {
                     QGCLabel {
                         id:         brandImageSectionLabel
                         text:       qsTr("Brand Image")
-                        visible:    QGroundControl.settingsManager.brandImageSettings.visible && !ScreenTools.isMobile
+                        visible:    false //QGroundControl.settingsManager.brandImageSettings.visible && !ScreenTools.isMobile
                     }
                     Rectangle {
                         Layout.preferredWidth:  brandImageGrid.width + (_margins * 2)

@@ -57,6 +57,10 @@ Item {
     property alias  _guidedController:              guidedActionsController
     property alias  _altitudeSlider:                altitudeSlider
     property real   _toolsMargin:                   ScreenTools.defaultFontPixelWidth * 0.75
+    property var    _videoReceiver:                 QGroundControl.videoManager.videoReceiver
+    property bool   _recordingVideo:                _videoReceiver && _videoReceiver.recording
+    property bool   _videoRunning:                  _videoReceiver && _videoReceiver.videoRunning
+    property bool   _streamingEnabled:              QGroundControl.settingsManager.videoSettings.streamConfigured
 
     readonly property var       _dynamicCameras:        activeVehicle ? activeVehicle.dynamicCameras : null
     readonly property bool      _isCamera:              _dynamicCameras ? _dynamicCameras.cameras.count > 0 : false
@@ -542,10 +546,63 @@ Item {
             guidedActionsController:    _guidedController
         }
 
-
+        //Nightcrawler/Patrios video recording Button
+        // Button to start/stop video recording
+        /*
+        Item {
+            anchors.right:              parent.right
+            anchors.bottom:             patriosBox.top
+            anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+            anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
+            anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
+            height:                     ScreenTools.defaultFontPixelHeight * 2
+            width:                      height
+            z:                          _mapAndVideo.z + 5
+            visible:            true //QGroundControl.videoManager.isGStreamer
+            Rectangle {
+                id:                 recordBtnBackground
+                anchors.top:        parent.top
+                anchors.bottom:     parent.bottom
+                width:              height
+                radius:             _recordingVideo ? 0 : height
+                color:              (_videoRunning && _streamingEnabled) ? "red" : "gray"
+                SequentialAnimation on opacity {
+                    running:        _recordingVideo
+                    loops:          Animation.Infinite
+                    PropertyAnimation { to: 0.5; duration: 500 }
+                    PropertyAnimation { to: 1.0; duration: 500 }
+                }
+            }
+            QGCColoredImage {
+                anchors.top:                parent.top
+                anchors.bottom:             parent.bottom
+                anchors.horizontalCenter:   parent.horizontalCenter
+                width:                      height * 0.625
+                sourceSize.width:           width
+                source:                     "/qmlimages/CameraIcon.svg"
+                visible:                    recordBtnBackground.visible
+                fillMode:                   Image.PreserveAspectFit
+                color:                      "white"
+            }
+            MouseArea {
+                anchors.fill:   parent
+                enabled:        _videoRunning && _streamingEnabled
+                onClicked: {
+                    if (_recordingVideo) {
+                        _videoReceiver.stopRecording()
+                        // reset blinking animation
+                        recordBtnBackground.opacity = 1
+                    } else {
+                        _videoReceiver.startRecording(videoFileName.text)
+                    }
+                }
+            }
+        }
+        */
         //Nightcrawler/Patrios specific feedback panel
 
         Rectangle {
+            id:                 patriosBox
             width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
             height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2
             radius: ScreenTools.defaultFontPixelHeight * 0.5
@@ -580,6 +637,59 @@ Item {
                     columns:            2
                     anchors.horizontalCenter: parent.horizontalCenter
 
+                    QGCLabel {
+                        text: qsTr("Video Recording:")
+                        color: "white"
+                    }
+                    Item {
+                       // anchors.right:              parent.right
+                       // anchors.bottom:             patriosBox.top
+                      //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+                      //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
+                      //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        width:                      height
+                        z:                          _mapAndVideo.z + 5
+                        visible:            true //QGroundControl.videoManager.isGStreamer
+                        Rectangle {
+                            id:                 recordBtnBackground
+                            anchors.top:        parent.top
+                            anchors.bottom:     parent.bottom
+                            width:              height
+                            radius:             height //_recordingVideo ? 0 : height
+                            color:              (_videoRunning && _streamingEnabled && _recordingVideo) ? "red" : "gray"//(_videoRunning && _streamingEnabled) ? "red" : "gray"
+                            SequentialAnimation on opacity {
+                                running:        _recordingVideo
+                                loops:          Animation.Infinite
+                                PropertyAnimation { to: 0.5; duration: 500 }
+                                PropertyAnimation { to: 1.0; duration: 500 }
+                            }
+                        }
+                        QGCColoredImage {
+                            anchors.top:                parent.top
+                            anchors.bottom:             parent.bottom
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            width:                      height * 0.625
+                            sourceSize.width:           width
+                            source:                     "/qmlimages/CameraIcon.svg"
+                            visible:                    recordBtnBackground.visible
+                            fillMode:                   Image.PreserveAspectFit
+                            color:                      "white"
+                        }
+                        MouseArea {
+                            anchors.fill:   parent
+                            enabled:        _videoRunning && _streamingEnabled
+                            onClicked: {
+                                if (_recordingVideo) {
+                                    _videoReceiver.stopRecording()
+                                    // reset blinking animation
+                                    recordBtnBackground.opacity = 1
+                                } else {
+                                    _videoReceiver.startRecording()
+                                }
+                            }
+                        }
+                    }
                     QGCLabel {
                         text: qsTr("Active Camera:")
                         color: "white"

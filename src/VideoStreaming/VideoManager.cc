@@ -44,6 +44,40 @@ VideoManager::~VideoManager()
     delete _thermalVideoReceiver;
     _thermalVideoReceiver = nullptr;
 }
+/// Returns the string to speak to identify the vehicle
+QString VideoManager::_vehicleIdSpeech()
+{
+     if(_activeVehicle) {
+        if (_toolbox->multiVehicleManager()->vehicles()->count() > 1) {
+            return tr("vehicle %1").arg( _activeVehicle->id());
+        } else {
+            return QString();
+        }
+     }
+     return QString();
+}
+void VideoManager::_say(const QString& text)
+{
+    _toolbox->audioOutput()->say(text.toLower());
+}
+
+void VideoManager::toggleLocalVideoRecord()
+{
+    qDebug() << "Got video record";
+    if (_videoReceiver->recording())
+    {
+        qDebug() << "stop video record";
+        _say(tr("%1: Video Recording Stopped").arg(_vehicleIdSpeech()));
+        _videoReceiver->stopRecording();
+    }
+    else if (!_videoReceiver->recording() && _videoReceiver->videoRunning())
+    {
+        qDebug() << "start video record";
+        _say(tr("%1: Video Recording Started").arg(_vehicleIdSpeech()));
+        _videoReceiver->startRecording();
+    }
+
+}
 
 //-----------------------------------------------------------------------------
 void
@@ -60,7 +94,7 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    connect(_videoSettings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
    connect(_videoSettings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
    connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
-   connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
+   connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);   
    MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
@@ -73,6 +107,7 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
     emit isGStreamerChanged();
     qCDebug(VideoManagerLog) << "New Video Source:" << videoSource;
     _videoReceiver = toolbox->corePlugin()->createVideoReceiver(this);
+
     _thermalVideoReceiver = toolbox->corePlugin()->createVideoReceiver(this);
     _updateSettings();
     if(isGStreamer()) {
@@ -255,6 +290,7 @@ VideoManager::isGStreamer()
     QString videoSource = _videoSettings->videoSource()->rawValue().toString();
     return
         videoSource == VideoSettings::videoSourceUDPH264 ||
+        videoSource == VideoSettings::videoSourceMulticastUDPH264 ||
         videoSource == VideoSettings::videoSourceUDPH265 ||
         videoSource == VideoSettings::videoSourceRTSP ||
         videoSource == VideoSettings::videoSourceTCP ||
@@ -392,28 +428,17 @@ VideoManager::_updateSettings()
         }
     }
     QString source = _videoSettings->videoSource()->rawValue().toString();
-    if (source == VideoSettings::videoSourceUDPH264)
+    if (source == VideoSettings::videoSourceMulticastUDPH264)
     {
-        //convert active vehicles's source address into multicast
-        //
-        //_videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+        qDebug() << "multicast source";
         if (_activeVehicle)
-        {
-            //if (_activeVehicle->active())
-           // {
-                 _videoReceiver->setUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->udpPort()->rawValue().toInt()));
-                 //_videoReceiver->setUri(QStringLiteral("udp://224.0.1.1:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
-                 qDebug() << "Setting video URI: " << QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->udpPort()->rawValue().toInt());
-            //}
-        }
+             _videoReceiver->setUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->udpPort()->rawValue().toInt()));
         else
-        {
-            qDebug() << "No vehicle yet, using 0.0.0.0 for video";
-            _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
-        }
-
-        //_videoReceiver->setUri(QStringLiteral("udp://224.0.1.1:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+            _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));     //use unicast until a vehicle is connected
     }
+
+    else if (source == VideoSettings::videoSourceUDPH264)
+        _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceUDPH265)
         _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceMPEGTS)

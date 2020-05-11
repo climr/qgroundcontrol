@@ -60,7 +60,7 @@
     "shortDescription": "Announce battery remaining percent",
     "longDescription":  "Announce the remaining battery percent when it falls below the specified percentage.",
     "type":             "uint32",
-    "defaultValue":     30,
+    "defaultValue":     0,
     "units":            "%",
     "min":              0,
     "max":              100

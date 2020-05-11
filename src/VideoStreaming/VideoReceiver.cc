@@ -698,6 +698,7 @@ VideoReceiver::start()
         _running = true;
         qCDebug(VideoReceiverLog) << "Running";
     }
+
     _starting = false;
 #endif
 }

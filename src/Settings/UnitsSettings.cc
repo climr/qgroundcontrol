@@ -97,7 +97,7 @@ DECLARE_SETTINGSFACT_NO_FUNC(UnitsSettings, temperatureUnits)
         metaData->setName(temperatureUnitsName);
         metaData->setShortDescription("Temperature units");
         metaData->setEnumInfo(enumStrings, enumValues);
-        metaData->setRawDefaultValue(TemperatureUnitsCelsius);
+        metaData->setRawDefaultValue(TemperatureUnitsFarenheit);
         metaData->setQGCRebootRequired(true);
         _temperatureUnitsFact = new SettingsFact(_settingsGroup, metaData, this);
     }

@@ -3,7 +3,7 @@ message("Adding Custom Plugin")
 #-- Version control
 #   Major and minor versions are defined here (manually)
 
-CUSTOM_QGC_VER_MAJOR = 0
+CUSTOM_QGC_VER_MAJOR = 1
 CUSTOM_QGC_VER_MINOR = 0
 CUSTOM_QGC_VER_FIRST_BUILD = 0
 

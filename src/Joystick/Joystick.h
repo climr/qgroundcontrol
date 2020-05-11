@@ -226,6 +226,7 @@ signals:
     void triggerCamera              ();
     void startVideoRecord           ();
     void stopVideoRecord            ();
+    void toggleLocalVideoRecord     ();
     void toggleVideoRecord          ();
     void gimbalPitchStep            (int direction);
     void gimbalYawStep              (int direction);
@@ -284,7 +285,7 @@ protected:
     bool    _calibrationMode        = false;
     int*    _rgAxisValues           = nullptr;
     Calibration_t* _rgCalibration   = nullptr;
-    ThrottleMode_t _throttleMode    = ThrottleModeDownZero;
+    ThrottleMode_t _throttleMode    = ThrottleModeCenterZero;  // was ThrottleModeDownZero
     bool    _negativeThrust         = true;
     float   _exponential            = 0;
     bool    _accumulator            = false;
@@ -293,7 +294,7 @@ protected:
     float   _axisFrequency          = 25.0f;
     float   _buttonFrequency        = 5.0f;
     Vehicle* _activeVehicle         = nullptr;
-    bool    _gimbalEnabled          = false;
+    bool    _gimbalEnabled          = true;
 
     bool    _pollingStartedForCalibration = false;
 

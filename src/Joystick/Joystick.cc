@@ -725,7 +725,7 @@ void Joystick::startPolling(Vehicle* vehicle)
     if (vehicle) {
         // If a vehicle is connected, disconnect it
         if (_activeVehicle) {
-            UAS* uas = _activeVehicle->uas();
+            UAS* uas = _activeVehicle->uas();            
             disconnect(this, &Joystick::manualControl, uas, &UAS::setExternalControlSetpoint);
             disconnect(this, &Joystick::setDoSetServo, uas, &UAS::setServo);            
             disconnect(this, &Joystick::setArmed,           _activeVehicle, &Vehicle::setArmed);
@@ -741,6 +741,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
+            disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
         }
         // Always set up the new vehicle
         _activeVehicle = vehicle;
@@ -771,6 +772,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             connect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             connect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
+            connect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
 
             // FIXME: ****
             //connect(this, &Joystick::buttonActionTriggered, uas, &UAS::triggerAction);
@@ -803,6 +805,7 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
+            disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
 
         }
         // FIXME: ****
@@ -1088,7 +1091,8 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if(action == _buttonActionStopVideoRecord) {
         if (buttonDown) emit stopVideoRecord();
     } else if(action == _buttonActionToggleVideoRecord) {
-        if (buttonDown) emit toggleVideoRecord();
+         //if (buttonDown) emit toggleVideoRecord();
+         if (buttonDown) emit toggleLocalVideoRecord();
     } else if(action == _buttonActionGimbalUp) {
         if (buttonDown) _pitchStep(1);
     } else if(action == _buttonActionGimbalDown) {
@@ -1209,8 +1213,8 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextCamera));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousCamera));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionTriggerCamera));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStartVideoRecord));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStopVideoRecord));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStartVideoRecord));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStopVideoRecord));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleVideoRecord));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalDown,    true));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalUp,      true));
