@@ -94,6 +94,7 @@ const char* Vehicle::_estimatorStatusFactGroupName =    "estimatorStatus";
 
 // Standard connected vehicle
 Vehicle::Vehicle(LinkInterface*             link,
+                 quint32                    ip_addr,
                  int                        vehicleId,
                  int                        defaultComponentId,
                  MAV_AUTOPILOT              firmwareType,
@@ -101,7 +102,7 @@ Vehicle::Vehicle(LinkInterface*             link,
                  FirmwarePluginManager*     firmwarePluginManager,
                  JoystickManager*           joystickManager)
     : FactGroup(_vehicleUIUpdateRateMSecs, ":/json/Vehicle/VehicleFact.json")
-    , _sourceAddress(link->sourceAddress())
+    , _sourceAddress(ip_addr)
     , _id(vehicleId)
     , _defaultComponentId(defaultComponentId)
     , _active(false)
@@ -303,7 +304,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     for (const QHostAddress &address: QNetworkInterface::allAddresses()) {
         _localAddress.append(QHostAddress(address));
     }
-    _sourceAddress = link->sourceAddress();
+    _sourceAddress = ip_addr;
 }
 
 // Disconnected Vehicle for offline editing

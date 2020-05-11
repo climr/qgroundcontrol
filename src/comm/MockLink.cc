@@ -406,7 +406,7 @@ void MockLink::respondWithMavlinkMessage(const mavlink_message_t& msg)
 
     int cBuffer = mavlink_msg_to_send_buffer(buffer, &msg);
     QByteArray bytes((char *)buffer, cBuffer);
-    emit bytesReceived(this, bytes);
+    emit bytesReceived(this, 0, bytes);
 }
 
 /// @brief Called when QGC wants to write bytes to the MAV

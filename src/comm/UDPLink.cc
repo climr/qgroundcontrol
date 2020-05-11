@@ -207,6 +207,7 @@ void UDPLink::readBytes()
     }
 
     QByteArray databuffer;
+    quint32 ip_addr;
     while (_socket->hasPendingDatagrams())
     {
         QByteArray datagram;
@@ -216,13 +217,13 @@ void UDPLink::readBytes()
         //-- Note: This call is broken in Qt 5.9.3 on Windows. It always returns a blank sender and 0 for the port.
         _socket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
         //set the source address prior to processing bytes received
-        this->setSourceAddress(sender.toIPv4Address());
-
+        //qDebug() << "datagram from " << sender.toString() << "in" << this;
+        //this->setSourceAddress(sender.toIPv4Address());
+        ip_addr = sender.toIPv4Address();
         databuffer.append(datagram);
         //-- Wait a bit before sending it over
-        if(databuffer.size() > 10 * 1024) {
-
-            emit bytesReceived(this, databuffer);
+        if(databuffer.size() > 10 * 1024) {         
+            emit bytesReceived(this, ip_addr, databuffer);
             databuffer.clear();
         }
         _logInputDataRate(datagram.length(), QDateTime::currentMSecsSinceEpoch());
@@ -242,7 +243,8 @@ void UDPLink::readBytes()
     }
     //-- Send whatever is left
     if(databuffer.size()) {
-        emit bytesReceived(this, databuffer);
+        //qDebug() << "datagram from" << ip_addr;
+        emit bytesReceived(this, ip_addr, databuffer);
     }
 }
 

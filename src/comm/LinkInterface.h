@@ -123,11 +123,11 @@ public:
     /// set into the link when it is added to LinkManager
     uint8_t mavlinkChannel(void) const;
 
-    quint32 sourceAddress(void) {return _sourceAddress;}
-    void setSourceAddress(qint32 source)
-    {
-        _sourceAddress = source;
-    }
+//    quint32 sourceAddress(void) {return _sourceAddress;}
+//    void setSourceAddress(qint32 source)
+//    {
+//        _sourceAddress = source;
+//    }
 
 
     /// Returns whether this link is high latency or not. High latency links should only perform
@@ -184,9 +184,10 @@ signals:
      * forward the link data.
      *
      * @param link: Link where the data is coming from
+     * @param ip_addr : IP address where the data is coming from
      * @param data: The data received
      */
-    void bytesReceived(LinkInterface* link, QByteArray data);
+    void bytesReceived(LinkInterface* link, quint32 ip_addr, QByteArray data);
 
     /**
      * @brief New data has been sent

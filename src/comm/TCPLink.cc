@@ -96,12 +96,13 @@ void TCPLink::readBytes()
 {
     if (_socket) {
         qint64 byteCount = _socket->bytesAvailable();
+
         if (byteCount)
         {
             QByteArray buffer;
             buffer.resize(byteCount);
             _socket->read(buffer.data(), buffer.size());
-            emit bytesReceived(this, buffer);
+            emit bytesReceived(this,_socket->peerAddress().toIPv4Address(), buffer);
             _logInputDataRate(byteCount, QDateTime::currentMSecsSinceEpoch());
 #ifdef TCPLINK_READWRITE_DEBUG
             writeDebugBytes(buffer.data(), buffer.size());

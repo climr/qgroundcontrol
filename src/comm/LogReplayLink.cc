@@ -334,7 +334,7 @@ void LogReplayLink::_readNextLogEntry(void)
     while (timeToNextExecutionMSecs < 3) {
         // Read the next mavlink message from the log
         qint64 nextTimeUSecs = _readNextMavlinkMessage(bytes);
-        emit bytesReceived(this, bytes);
+        emit bytesReceived(this, 0, bytes);
         emit playbackPercentCompleteChanged(((float)(_logCurrentTimeUSecs - _logStartTimeUSecs) / (float)_logDurationUSecs) * 100);
 
         if (_logFile.atEnd()) {

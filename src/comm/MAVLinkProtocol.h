@@ -79,7 +79,7 @@ public:
 
 public slots:
     /** @brief Receive bytes from a communication interface */
-    void receiveBytes(LinkInterface* link, QByteArray b);
+    void receiveBytes(LinkInterface* link, quint32 ip_addr, QByteArray b);
 
     /** @brief Log bytes sent from a communication interface */
     void logSentBytes(LinkInterface* link, QByteArray b);
@@ -119,7 +119,7 @@ protected:
 
 signals:
     /// Heartbeat received on link
-    void vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleFirmwareType, int vehicleType);
+    void vehicleHeartbeatInfo(LinkInterface* link, quint32 ip_addr, int vehicleId, int componentId, int vehicleFirmwareType, int vehicleType);
 
     /** @brief Message received and directly copied via signal */
     void messageReceived(LinkInterface* link, mavlink_message_t message);

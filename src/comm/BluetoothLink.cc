@@ -93,7 +93,7 @@ void BluetoothLink::readBytes()
             QByteArray datagram;
             datagram.resize(_targetSocket->bytesAvailable());
             _targetSocket->read(datagram.data(), datagram.size());
-            emit bytesReceived(this, datagram);
+            emit bytesReceived(this,0, datagram);
             _logInputDataRate(datagram.length(), QDateTime::currentMSecsSinceEpoch());
         }
     }

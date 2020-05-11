@@ -479,6 +479,7 @@ class Vehicle : public FactGroup
 
 public:
     Vehicle(LinkInterface*          link,
+            quint32                 ip_addr,
             int                     vehicleId,
             int                     defaultComponentId,
             MAV_AUTOPILOT           firmwareType,

@@ -199,11 +199,13 @@ void MAVLinkProtocol::logSentBytes(LinkInterface* link, QByteArray b){
  * @see LinkInterface
  **/
 
-void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
+void MAVLinkProtocol::receiveBytes(LinkInterface* link, quint32 ip_addr, QByteArray b)
 {
     // Since receiveBytes signals cross threads we can end up with signals in the queue
     // that come through after the link is disconnected. For these we just drop the data
     // since the link is closed.
+
+   // qDebug() <<"mavlinkprotocol bytes from source ip"<< ip_addr;
 
     if (!_linkMgr->containsLink(link)) {
         return;
@@ -310,14 +312,14 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 _startLogging();
                 mavlink_heartbeat_t heartbeat;
                 mavlink_msg_heartbeat_decode(&_message, &heartbeat);
-                emit vehicleHeartbeatInfo(link, _message.sysid, _message.compid, heartbeat.autopilot, heartbeat.type);
+                emit vehicleHeartbeatInfo(link, ip_addr, _message.sysid, _message.compid, heartbeat.autopilot, heartbeat.type);
             }
 
             if (_message.msgid == MAVLINK_MSG_ID_HIGH_LATENCY2) {
                 _startLogging();
                 mavlink_high_latency2_t highLatency2;
                 mavlink_msg_high_latency2_decode(&_message, &highLatency2);
-                emit vehicleHeartbeatInfo(link, _message.sysid, _message.compid, highLatency2.autopilot, highLatency2.type);
+                emit vehicleHeartbeatInfo(link, ip_addr, _message.sysid, _message.compid, highLatency2.autopilot, highLatency2.type);
             }
 
 #if 0

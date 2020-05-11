@@ -102,7 +102,7 @@ private slots:
     void _setActiveVehiclePhase2        (void);
     void _vehicleParametersReadyChanged (bool parametersReady);
     void _sendGCSHeartbeat              (void);
-    void _vehicleHeartbeatInfo          (LinkInterface* link, int vehicleId, int componentId, int vehicleFirmwareType, int vehicleType);
+    void _vehicleHeartbeatInfo          (LinkInterface* link, quint32 ip_addr, int vehicleId, int componentId, int vehicleFirmwareType, int vehicleType);
     void _requestProtocolVersion        (unsigned version);
     void _coordinateChanged             (QGeoCoordinate coordinate);
 
