@@ -3997,6 +3997,92 @@ void Vehicle::set4WSteeringMode(bool value)
 
     emit steeringModeChanged(_fourwheelsteering);
 }
+
+void Vehicle::setLight(int c)
+{
+    int overtChannel = 7;
+    int irChannel = 8;
+    int servoLow = 900;
+    int servoHigh = 2000;
+    //set light to the appropriate mode
+    _currentLight = c;
+    emit currentLightChanged(c);
+    //set pwm outputs to control lights
+    if (c==0)
+    {
+        //set both lights off
+            sendMavCommand(defaultComponentId(),
+                           MAV_CMD_DO_SET_SERVO,
+                           false,
+                           overtChannel,
+                           servoLow,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0);
+            sendMavCommand(defaultComponentId(),
+                           MAV_CMD_DO_SET_SERVO,
+                           false,
+                           irChannel,
+                           servoLow,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0);
+    }
+    else if (c==1)
+    {
+        //set overt on and ir off
+        sendMavCommand(defaultComponentId(),
+                       MAV_CMD_DO_SET_SERVO,
+                       false,
+                       overtChannel,
+                       servoHigh,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0);
+        sendMavCommand(defaultComponentId(),
+                       MAV_CMD_DO_SET_SERVO,
+                       false,
+                       irChannel,
+                       servoLow,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0);
+    }
+    else
+    {
+        //set ir on and overt off
+        sendMavCommand(defaultComponentId(),
+                       MAV_CMD_DO_SET_SERVO,
+                       false,
+                       overtChannel,
+                       servoLow,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0);
+        sendMavCommand(defaultComponentId(),
+                       MAV_CMD_DO_SET_SERVO,
+                       false,
+                       irChannel,
+                       servoHigh,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0);
+    }
+    emit currentLightChanged(c);
+
+}
 void Vehicle::_setCameraPosition(int c)
 {
     _currentCamera = c;
@@ -4150,7 +4236,7 @@ void Vehicle::setWeaponsArmed(bool value)
 
 void Vehicle::setWeaponFire(bool value)
 {
-    int servoChannel = 8;  //todo, move this to settings
+    int servoChannel = 6;  //todo, move this to settings
     int servoHigh = 2000;
     int servoLow = 900;
     if (!value)  //false
@@ -4169,18 +4255,25 @@ void Vehicle::setWeaponFire(bool value)
     }
     if (_weaponsPreArmed && _weaponsArmed && value)
     {
-         //set servo high
-         sendMavCommand(defaultComponentId(),
-                        MAV_CMD_DO_SET_SERVO,
-                        false,
-                        servoChannel,
-                        servoHigh,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0);
-          _say(tr("%1 : Fire").arg(_vehicleIdSpeech()));
+         //set servo high, sending this as a single message without retries to ensure it doesn't get resent over a bad link when it isn't expected
+        mavlink_message_t msg;
+        mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                           defaultComponentId(),
+                                           priorityLink()->mavlinkChannel(),
+                                           &msg,
+                                           _id,
+                                           defaultComponentId(),   // target component
+                                           MAV_CMD_DO_SET_SERVO,    // command id
+                                           0,                                // 0=first transmission of command
+                                           servoChannel,
+                                           servoHigh,
+                                           0,
+                                           0,
+                                           0,
+                                           0,
+                                           0);
+         sendMessageOnLink(priorityLink(), msg);
+         _say(tr("%1 : Fire").arg(_vehicleIdSpeech()));
     }
 
 

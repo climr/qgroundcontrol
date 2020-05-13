@@ -63,14 +63,17 @@ const char* Joystick::_buttonActionStopVideoRecord =    QT_TR_NOOP("Stop Recordi
 const char* Joystick::_buttonActionToggleVideoRecord =  QT_TR_NOOP("Toggle Recording Video");
 const char* Joystick::_buttonActionGimbalDown =         QT_TR_NOOP("Gimbal Down");
 const char* Joystick::_buttonActionGimbalUp =           QT_TR_NOOP("Gimbal Up");
+const char* Joystick::_buttonActionLightsOff =          QT_TR_NOOP("Lights Off");
+const char* Joystick::_buttonActionLightsOnOvert =      QT_TR_NOOP("Light On Overt");
+const char* Joystick::_buttonActionLightsOnIR =         QT_TR_NOOP("Light On IR");
 const char* Joystick::_buttonActionGimbalLeft =         QT_TR_NOOP("Gimbal Left");
 const char* Joystick::_buttonActionGimbalRight =        QT_TR_NOOP("Gimbal Right");
 const char* Joystick::_buttonActionGimbalCenter =       QT_TR_NOOP("Gimbal Center");
 const char* Joystick::_buttonAction2WSteering =         QT_TR_NOOP("2 Wheel Steering Mode");
 const char* Joystick::_buttonAction4WSteering =         QT_TR_NOOP("4 Wheel Steering Mode");
-const char* Joystick::_buttonActionPreArmWeapons =      QT_TR_NOOP("Pre-Arm Weapon System");
-const char* Joystick::_buttonActionArmWeapons =         QT_TR_NOOP("Arm Weapon System");
-const char* Joystick::_buttonActionFireWeapon =         QT_TR_NOOP("Fire Weapon System");
+const char* Joystick::_buttonActionPreArmWeapons =      QT_TR_NOOP("Arm Weapons");
+const char* Joystick::_buttonActionArmWeapons =         QT_TR_NOOP("Step 1 Weapon Fire");
+const char* Joystick::_buttonActionFireWeapon =         QT_TR_NOOP("Step 2 Weapon Fire");
 const char* Joystick::_buttonActionSlowSpeedMode =         QT_TR_NOOP("Slow Speed Mode");
 const char* Joystick::_buttonActionHighSpeedMode =         QT_TR_NOOP("High Speed Mode");
 
@@ -625,6 +628,22 @@ void Joystick::_handleAxis()
                 //axis = _rgFunctionAxis[gimbalYawFunction];
                 axis = 5;
                 gimbalYaw = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis], true);  //specifing to use deadband
+                //qDebug() << "gimbal gimbalYaw value preaccumulator:" << gimbalYaw << _rgAxisValues[axis];
+                //experimentatl gimbal accumulator
+                static float gimbalYaw_accu = 0.f;
+                if (gimbalYaw < 0)
+                {
+                    gimbalYaw_accu -= gimbalYaw * (40 / 1000.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
+                    if (gimbalYaw_accu < gimbalYaw) gimbalYaw_accu = gimbalYaw;
+                }
+                else
+                {
+                    gimbalYaw_accu += gimbalYaw * (40 / 1000.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
+                    if (gimbalYaw_accu > gimbalYaw) gimbalYaw_accu = gimbalYaw;
+                }
+                gimbalYaw_accu = std::max(static_cast<float>(-1.f), std::min(gimbalYaw_accu, static_cast<float>(1.f)));
+                gimbalYaw = gimbalYaw_accu;
+
                 //qDebug() << "gimbal gimbalYaw value:" << gimbalYaw;
             }
 
@@ -741,6 +760,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
+            disconnect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
         }
         // Always set up the new vehicle
@@ -772,7 +792,10 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             connect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             connect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
+            connect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
             connect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
+
+
 
             // FIXME: ****
             //connect(this, &Joystick::buttonActionTriggered, uas, &UAS::triggerAction);
@@ -805,6 +828,7 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
+            disconnect(this, &Joystick::setLightMode,       _activeVehicle,  &Vehicle::setLight);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
 
         }
@@ -1093,6 +1117,12 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if(action == _buttonActionToggleVideoRecord) {
          //if (buttonDown) emit toggleVideoRecord();
          if (buttonDown) emit toggleLocalVideoRecord();
+    } else if (action == _buttonActionLightsOff){
+        if (buttonDown) emit setLightMode(0);
+    } else if (action == _buttonActionLightsOnOvert){
+        if (buttonDown) emit setLightMode(1);
+    } else if (action == _buttonActionLightsOnIR){
+        if (buttonDown) emit setLightMode(2);
     } else if(action == _buttonActionGimbalUp) {
         if (buttonDown) _pitchStep(1);
     } else if(action == _buttonActionGimbalDown) {
@@ -1227,7 +1257,10 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArmWeapons));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionFireWeapon));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionSlowSpeedMode));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionHighSpeedMode));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionHighSpeedMode));    
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOff));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOnOvert));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOnIR));
 
     for(int i = 0; i < _assignableButtonActions.count(); i++) {
         AssignableButtonAction* p = qobject_cast<AssignableButtonAction*>(_assignableButtonActions[i]);

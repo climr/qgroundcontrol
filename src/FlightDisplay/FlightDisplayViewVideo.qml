@@ -151,6 +151,34 @@ Item {
                     visible:  _showGrid
 
                 }
+                Rectangle {
+                    id:             camera_display
+                    anchors.top:             parent.top
+                    anchors.topMargin:       ScreenTools.defaultFontPixelHeight * 2
+                    anchors.horizontalCenter:   parent.horizontalCenter
+                    color:          Qt.rgba(0,0,0,0.75)
+                    visible:        _videoReceiver && _videoReceiver.videoRunning
+                    z:                          _mapAndVideo.z + 5
+                    QGCLabel {
+                        text:               getCamView()
+                        font.family:        ScreenTools.demiboldFontFamily
+                        color:              "white"
+                        font.pointSize:     mainIsMap ? ScreenTools.smallFontPointSize : ScreenTools.largeFontPointSize
+                        anchors.centerIn:   parent
+                        function getCamView() {
+                            if(activeVehicle.currentCamera === 0) {
+                                return "FRONT VIEW"
+                            }
+                            else if(activeVehicle.currentCamera === 1) {
+                                return "FRONT VIEW THERMAL"
+                            }
+                            else
+                                return "REAR VIEW"
+                        }
+
+                    }
+                }
+
                 /*
                 Rectangle {  //optional smaller circle
                     color:  Qt.rgba(0,0,0,0)

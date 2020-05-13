@@ -206,7 +206,8 @@ signals:
 
     void setDoSetServo              (int channel, int value);
     void set4WSteeringMode          (bool value);
-    void setWeaponsPreArmed            (bool value);
+    void setLightMode               (int value);
+    void setWeaponsPreArmed         (bool value);
     void setWeaponsArmed            (bool value);
     void setWeaponFire              (bool value);
     void setSlowSpeedMode           (bool value);
@@ -337,7 +338,6 @@ private:
     static const char* _vtolTXModeSettingsKey;
     static const char* _submarineTXModeSettingsKey;
     static const char* _gimbalSettingsKey;
-
     static const char* _buttonActionNone;
     static const char* _buttonActionArm;
     static const char* _buttonActionDisarm;
@@ -368,6 +368,10 @@ private:
     static const char* _buttonActionFireWeapon;
     static const char* _buttonActionSlowSpeedMode;
     static const char* _buttonActionHighSpeedMode;
+    static const char*  _buttonActionLightsOff;
+    static const char*  _buttonActionLightsOnOvert;
+    static const char*  _buttonActionLightsOnIR;
+
 
 private slots:
     void _activeVehicleChanged(Vehicle* activeVehicle);

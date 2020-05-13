@@ -601,6 +601,8 @@ Item {
         */
         //Nightcrawler/Patrios specific feedback panel
 
+
+
         Rectangle {
             id:                 patriosBox
             width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
@@ -689,7 +691,7 @@ Item {
                                 }
                             }
                         }
-                    }
+                    }                   
                     QGCLabel {
                         text: qsTr("Active Camera:")
                         color: "white"
@@ -697,14 +699,30 @@ Item {
                     QGCLabel {
                         text: getCamName()
                         color: "white"
-                        function getCamName() {
-                            //-- Fit Width or Stretch
+                        function getCamName() {                          
                             if(activeVehicle.currentCamera === 0)
                                 return qsTr("Front")
                             else if (activeVehicle.currentCamera === 1)
                                 return qsTr("Thermal")
                             else
                                 return qsTr("Rear")
+                            }
+
+                    }
+                    QGCLabel {
+                        text: qsTr("Lights:")
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: getLightModeName()
+                        color: "white"
+                        function getLightModeName() {
+                            if(activeVehicle.currentLight === 0)
+                                return qsTr("Off")
+                            else if (activeVehicle.currentLight === 1)
+                                return qsTr("Overt On")
+                            else
+                                return qsTr("IR On")
                             }
 
                     }
@@ -731,10 +749,10 @@ Item {
                     }
                     QGCLabel {
                         text: getArmStatus()
-                        color: (activeVehicle.weaponsArmed || activeVehicle.weaponsPreArmed) ? "red" : "white"
+                        color: (activeVehicle.weaponsPreArmed) ? "red" : "white"
                          function getArmStatus() {
                              if (activeVehicle.weaponsArmed && activeVehicle.weaponsPreArmed)
-                                 return qsTr("FIRE SEQ 1 of 2")
+                                 return qsTr("FIRE STEP 1 of 2")
                              if (activeVehicle.weaponsPreArmed)
                                  return qsTr("ARMED")
                              else

@@ -627,6 +627,7 @@ public:
     Q_PROPERTY(bool              initialPlanRequestComplete READ initialPlanRequestComplete                             NOTIFY initialPlanRequestCompleteChanged)
     Q_PROPERTY(QVariantList         staticCameraList        READ staticCameraList                                       CONSTANT)
     Q_PROPERTY(int                  currentCamera           READ currentCamera                                          NOTIFY currentCameraChanged)
+    Q_PROPERTY(int                  currentLight            READ currentLight                                           NOTIFY currentLightChanged)
     Q_PROPERTY(QGCCameraManager*    dynamicCameras          READ dynamicCameras                                         NOTIFY dynamicCamerasChanged)
     Q_PROPERTY(QString              hobbsMeter              READ hobbsMeter                                             NOTIFY hobbsMeterChanged)
     Q_PROPERTY(bool                 vtolInFwdFlight         READ vtolInFwdFlight        WRITE setVtolInFwdFlight        NOTIFY vtolInFwdFlightChanged)
@@ -822,6 +823,7 @@ public:
     void setWeaponsPreArmed(bool value);
     void setWeaponFire(bool value);
     void setSlowSpeedMode(bool value);
+    void setLight(int value);
     void gotoNextCamera();
     int joystickMode();
     void setJoystickMode(int mode);
@@ -1146,6 +1148,7 @@ public:
 
     QGCCameraManager*           dynamicCameras      () { return _cameras; }
     int                         currentCamera       () {return _currentCamera;}
+    int                         currentLight        () {return _currentLight;}
     QString                     hobbsMeter          ();
 
     /// @true: When flying a mission the vehicle is always facing towards the next waypoint
@@ -1244,6 +1247,7 @@ signals:
     void weaponsArmedChanged            (bool value);
     void weaponsPreArmedChanged         (bool value);
     void currentCameraChanged           (int camera);
+    void currentLightChanged            (int light);
     void steeringModeChanged            (bool value);
     void speedModeChanged               (bool value);
     void telemetryRRSSIChanged          (int value);
@@ -1538,6 +1542,7 @@ private:
     bool    _weaponsPreArmed = false;  ///true: weapon system is pre armed
     bool    _slowspeedmode = false;    ///true: slow speed mode is on
     int     _currentCamera = 0;
+    int     _currentLight = 0;
     bool    _fourwheelsteering = false;  ///true: 4wsteering is engaged
     bool    _highspeedmode = false; ///true: high speed mode is engaged
     uint8_t _base_mode;     ///< base_mode from HEARTBEAT
