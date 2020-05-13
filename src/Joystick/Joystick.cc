@@ -177,6 +177,7 @@ void Joystick::_setDefaultCalibration(void) {
     _throttleMode   = ThrottleModeDownZero;
     _calibrated     = true;
     _circleCorrection = false;
+    _targetGimbalYaw = 0.0f;
 
     _saveSettings();
 }
@@ -628,12 +629,47 @@ void Joystick::_handleAxis()
                 //axis = _rgFunctionAxis[gimbalYawFunction];
                 axis = 5;
                 gimbalYaw = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis], true);  //specifing to use deadband
-                //qDebug() << "gimbal gimbalYaw value preaccumulator:" << gimbalYaw << _rgAxisValues[axis];
+                qDebug() << "gimbal gimbalYaw value preaccumulator:" << gimbalYaw << _rgAxisValues[axis];
+                int gimbalRate = 15;  //speed of gimbal movement 1-100%
                 //experimentatl gimbal accumulator
                 static float gimbalYaw_accu = 0.f;
-                if (gimbalYaw < 0)
+                if (gimbalYaw == 0.f)
                 {
-                    gimbalYaw_accu -= gimbalYaw * (40 / 1000.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
+                    //within the deadband, so make way back to zero
+                     if (gimbalYaw < _targetGimbalYaw)
+                     {
+                         gimbalYaw_accu -= (gimbalRate / 100.f);
+                         if (gimbalYaw_accu < 0) gimbalYaw_accu = 0.0f;
+                     }
+                     else
+                     {
+                         gimbalYaw_accu += (gimbalRate / 100.f);
+                         if (gimbalYaw_accu > 0) gimbalYaw_accu = 0.0f;
+                     }
+                }
+                else if (gimbalYaw < _targetGimbalYaw)
+                {
+                    gimbalYaw_accu -= (gimbalRate / 100.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
+                    if (gimbalYaw_accu < gimbalYaw) gimbalYaw_accu = gimbalYaw;
+                }
+                else if (gimbalYaw >= _targetGimbalYaw)
+                {
+                    gimbalYaw_accu += (gimbalRate / 100.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
+                    if (gimbalYaw_accu > gimbalYaw) gimbalYaw_accu = gimbalYaw;
+                }
+                gimbalYaw_accu = std::max(static_cast<float>(-1.f), std::min(gimbalYaw_accu, static_cast<float>(1.f)));
+                _targetGimbalYaw = gimbalYaw_accu;  //save the previous point we calculated
+                gimbalYaw = gimbalYaw_accu;
+
+
+                /*
+                //experimentatl gimbal accumulator
+                static float gimbalYaw_accu = 0.f;
+                if (gimbalYaw == 0.f)
+                    gimbalYaw_accu = 0.f;
+                else if (gimbalYaw < 0)
+                {
+                    gimbalYaw_accu += gimbalYaw * (40 / 1000.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
                     if (gimbalYaw_accu < gimbalYaw) gimbalYaw_accu = gimbalYaw;
                 }
                 else
@@ -643,8 +679,9 @@ void Joystick::_handleAxis()
                 }
                 gimbalYaw_accu = std::max(static_cast<float>(-1.f), std::min(gimbalYaw_accu, static_cast<float>(1.f)));
                 gimbalYaw = gimbalYaw_accu;
+                */
 
-                //qDebug() << "gimbal gimbalYaw value:" << gimbalYaw;
+                qDebug() << "gimbal gimbalYaw value:" << gimbalYaw;
             }
 
             if (_accumulator) {
@@ -701,7 +738,7 @@ void Joystick::_handleAxis()
                 //-- TODO: There is nothing consuming this as there are no messages to handle gimbal
                 //   the way MANUAL_CONTROL handles the other channels.
                 //emit manualControlGimbal((gimbalPitch + 1.0f) / 2.0f * 90.0f, gimbalYaw * 180.0f);
-                int upperServo = 1900;
+                int upperServo = 2100;
                 int lowerServo = 900;
                 int centerServo = 1500;
                 if (gimbalYaw < 0)

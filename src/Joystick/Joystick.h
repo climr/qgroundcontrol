@@ -290,6 +290,7 @@ protected:
     bool    _negativeThrust         = true;
     float   _exponential            = 0;
     bool    _accumulator            = false;
+    float   _targetGimbalYaw        = 0.0f;
     bool    _deadband               = false;
     bool    _circleCorrection       = true;
     float   _axisFrequency          = 25.0f;
