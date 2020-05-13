@@ -629,9 +629,11 @@ void Joystick::_handleAxis()
                 //axis = _rgFunctionAxis[gimbalYawFunction];
                 axis = 5;
                 gimbalYaw = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis], true);  //specifing to use deadband
-                qDebug() << "gimbal gimbalYaw value preaccumulator:" << gimbalYaw << _rgAxisValues[axis];
-                int gimbalRate = 15;  //speed of gimbal movement 1-100%
-                //experimentatl gimbal accumulator
+                //qDebug() << "gimbal gimbalYaw value preaccumulator:" << gimbalYaw << _rgAxisValues[axis];
+
+
+                //gimbal accumulator, this is used to smooth out the gimbal response with fast servos
+                int gimbalRate = 20;  //speed of gimbal movement 1-100%, TODO make setting
                 static float gimbalYaw_accu = 0.f;
                 if (gimbalYaw == 0.f)
                 {
@@ -661,27 +663,7 @@ void Joystick::_handleAxis()
                 _targetGimbalYaw = gimbalYaw_accu;  //save the previous point we calculated
                 gimbalYaw = gimbalYaw_accu;
 
-
-                /*
-                //experimentatl gimbal accumulator
-                static float gimbalYaw_accu = 0.f;
-                if (gimbalYaw == 0.f)
-                    gimbalYaw_accu = 0.f;
-                else if (gimbalYaw < 0)
-                {
-                    gimbalYaw_accu += gimbalYaw * (40 / 1000.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
-                    if (gimbalYaw_accu < gimbalYaw) gimbalYaw_accu = gimbalYaw;
-                }
-                else
-                {
-                    gimbalYaw_accu += gimbalYaw * (40 / 1000.f); //for gimbal to change from min to max it will take 1000ms (40ms is a loop time)
-                    if (gimbalYaw_accu > gimbalYaw) gimbalYaw_accu = gimbalYaw;
-                }
-                gimbalYaw_accu = std::max(static_cast<float>(-1.f), std::min(gimbalYaw_accu, static_cast<float>(1.f)));
-                gimbalYaw = gimbalYaw_accu;
-                */
-
-                qDebug() << "gimbal gimbalYaw value:" << gimbalYaw;
+                //qDebug() << "gimbal gimbalYaw value:" << gimbalYaw;
             }
 
             if (_accumulator) {
@@ -738,21 +720,26 @@ void Joystick::_handleAxis()
                 //-- TODO: There is nothing consuming this as there are no messages to handle gimbal
                 //   the way MANUAL_CONTROL handles the other channels.
                 //emit manualControlGimbal((gimbalPitch + 1.0f) / 2.0f * 90.0f, gimbalYaw * 180.0f);
-                int upperServo = 2100;
+
+                emit setGimbalPanValue(gimbalYaw);
+              /*  int upperServo = 2100;
                 int lowerServo = 900;
                 int centerServo = 1500;
                 if (gimbalYaw < 0)
                 {
                     int servoValue = (int)((centerServo - lowerServo) * gimbalYaw) + centerServo;
                     //qDebug() << "gimbal servo value:" << servoValue;
-                    emit setDoSetServo(5, servoValue);
+                    emit setGimbalPanValue(servoValue);
+                    //emit setDoSetServo(5, servoValue);
                 }
                 else
                 {
                     int servoValue = (int)((upperServo - centerServo) * gimbalYaw) + centerServo;
                     //qDebug() << "gimbal servo value:" << servoValue;
-                    emit setDoSetServo(5, servoValue);
+                    emit setGimbalPanValue(servoValue);
+                    //emit setDoSetServo(5, servoValue);
                 }
+                */
                 /*
                 if (gimbalYaw >= 500 || gimbalYaw <= -500)
                 {
@@ -782,8 +769,7 @@ void Joystick::startPolling(Vehicle* vehicle)
         // If a vehicle is connected, disconnect it
         if (_activeVehicle) {
             UAS* uas = _activeVehicle->uas();            
-            disconnect(this, &Joystick::manualControl, uas, &UAS::setExternalControlSetpoint);
-            disconnect(this, &Joystick::setDoSetServo, uas, &UAS::setServo);            
+            disconnect(this, &Joystick::manualControl, uas, &UAS::setExternalControlSetpoint);            
             disconnect(this, &Joystick::setArmed,           _activeVehicle, &Vehicle::setArmed);
             disconnect(this, &Joystick::setVtolInFwdFlight, _activeVehicle, &Vehicle::setVtolInFwdFlight);
             disconnect(this, &Joystick::setFlightMode,      _activeVehicle, &Vehicle::setFlightMode);
@@ -798,6 +784,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
             disconnect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
+            disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
         }
         // Always set up the new vehicle
@@ -830,6 +817,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             connect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
             connect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
+            connect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             connect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
 
 
@@ -866,6 +854,7 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
             disconnect(this, &Joystick::setLightMode,       _activeVehicle,  &Vehicle::setLight);
+            disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
 
         }

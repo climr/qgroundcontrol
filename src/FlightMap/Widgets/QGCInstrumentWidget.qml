@@ -17,13 +17,17 @@ import QGroundControl.FactSystem    1.0
 import QGroundControl.FlightMap     1.0
 import QGroundControl.Palette       1.0
 
+
+
 Rectangle {
     id:             root
-    width:          getPreferredInstrumentWidth()
-    height:         _outerRadius * 2
-    radius:         _outerRadius
+    width:          100//_outerRadius * 3//compass.width   + ScreenTools.defaultFontPixelWidth  * 3//getPreferredInstrumentWidth()
+    height:         100//_outerRadius * 3//compass.height   + ScreenTools.defaultFontPixelWidth  * 3//_outerRadius * 2
+    radius:         100
+    //radius:         _outerRadius
+    //anchors.Margin:       ScreenTools.defaultFontPixelHeight * 2
     color:          qgcPal.window
-    border.width:   1
+    border.width:   0
     border.color:   _isSatellite ? qgcPal.mapWidgetBorderLight : qgcPal.mapWidgetBorderDark
 
     property real   _innerRadius:       (width - (_topBottomMargin * 3)) / 4
@@ -43,7 +47,7 @@ Rectangle {
     }
 
     QGCPalette { id: qgcPal }
-
+/*
     QGCAttitudeWidget {
         id:                 attitude
         anchors.leftMargin: _topBottomMargin
@@ -52,16 +56,20 @@ Rectangle {
         vehicle:            activeVehicle
         anchors.verticalCenter: parent.verticalCenter
     }
+    */
 
     QGCCompassWidget {
         id:                 compass
         anchors.leftMargin: _spacing
         anchors.left:       attitude.right
-        size:               _innerRadius * 2
+        //size:               _innerRadius * 2
+        size: 100
         vehicle:            activeVehicle
         anchors.verticalCenter: parent.verticalCenter
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 
+    /*
     Item {
         id:                 _valuesItem
         anchors.topMargin:  ScreenTools.defaultFontPixelHeight / 4
@@ -87,5 +95,5 @@ Rectangle {
             anchors.right:      parent.right
             maxHeight:          _availableValueHeight
         }
-    }
+    }*/
 }

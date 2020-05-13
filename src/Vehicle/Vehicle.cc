@@ -1133,6 +1133,8 @@ void Vehicle::_handleAttitudeWorker(double rollRadians, double pitchRadians, dou
     _rollFact.setRawValue(roll);
     _pitchFact.setRawValue(pitch);
     _headingFact.setRawValue(yaw);
+
+
 }
 
 void Vehicle::_handleAttitude(mavlink_message_t& message)
@@ -3996,6 +3998,61 @@ void Vehicle::set4WSteeringMode(bool value)
     }
 
     emit steeringModeChanged(_fourwheelsteering);
+}
+
+void Vehicle::setGimbalPanValue(float value)
+{
+    //set servo and set vehicle gimble pan value in degrees
+
+    int midpoint = 1500;
+    int upperPoint = 2200;
+    int lowerPoint = 800;
+    int servoValue = 1500;
+    int gimbalSwing = 170;  //degrees the gimbal can swing
+    if (value < 0)
+    {
+      servoValue = (int)((midpoint - lowerPoint) * value) + midpoint;
+      _gimbalDegrees = -1 * (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)midpoint - (float)servoValue));
+    }
+    else
+    {
+      servoValue = (int)((upperPoint - midpoint) * value) + midpoint;
+      _gimbalDegrees = (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)servoValue - (float)midpoint));
+    }
+
+    //qDebug() << "servo value" << servoValue << "gimbal degrees" << _gimbalCalc;
+
+    //sanity check, limit _gimbalDegrees to +- 90
+    //_gimbalCalc = std::max(static_cast<int>(-90), std::min(_gimbalDegrees, static_cast<int>(90)));
+
+    mavlink_message_t msg;
+    mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                       _mavlink->getComponentId(),
+                                       priorityLink()->mavlinkChannel(),
+                                       &msg,
+                                       _id,
+                                       defaultComponentId(),   // target component
+                                       MAV_CMD_DO_SET_SERVO,    // command id
+                                       0, //first transmission
+                                       5,
+                                       servoValue,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                       0);
+    sendMessageOnLink(priorityLink(), msg);
+
+    _headingWithGimbalOffset = (_headingFact.rawValue().toInt() + _gimbalDegrees) % 360;
+    if (_headingWithGimbalOffset < 0)
+        _headingWithGimbalOffset += 360;
+    //qDebug() <<_headingFact.rawValue().toInt() << _gimbalDegrees << "vehicle angle plus gimbal" << _headingWithGimbalOffset;
+    emit currentHeadingGimbalCompensationChanged(_headingWithGimbalOffset);
+    emit currentGimbalPanChanged(_gimbalDegrees);
+    if (_gimbalDegrees != 0)
+        emit gimbalActiveChanged(true);
+    else
+        emit gimbalActiveChanged(false);
 }
 
 void Vehicle::setLight(int c)

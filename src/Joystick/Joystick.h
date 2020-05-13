@@ -205,6 +205,7 @@ signals:
     void manualControlGimbal        (float gimbalPitch, float gimbalYaw);
 
     void setDoSetServo              (int channel, int value);
+    void setGimbalPanValue          (float value);
     void set4WSteeringMode          (bool value);
     void setLightMode               (int value);
     void setWeaponsPreArmed         (bool value);

@@ -628,6 +628,9 @@ public:
     Q_PROPERTY(QVariantList         staticCameraList        READ staticCameraList                                       CONSTANT)
     Q_PROPERTY(int                  currentCamera           READ currentCamera                                          NOTIFY currentCameraChanged)
     Q_PROPERTY(int                  currentLight            READ currentLight                                           NOTIFY currentLightChanged)
+    Q_PROPERTY(int                  currentGimbalAngle      READ currentGimbalAngle                                     NOTIFY currentGimbalPanChanged)
+    Q_PROPERTY(bool                 isGimbalActive         READ isGimbalActive                                         NOTIFY gimbalActiveChanged)
+    Q_PROPERTY(int                  headingCompensatedGimbalAngle      READ currentGimbalCompensatedAngle               NOTIFY currentHeadingGimbalCompensationChanged)
     Q_PROPERTY(QGCCameraManager*    dynamicCameras          READ dynamicCameras                                         NOTIFY dynamicCamerasChanged)
     Q_PROPERTY(QString              hobbsMeter              READ hobbsMeter                                             NOTIFY hobbsMeterChanged)
     Q_PROPERTY(bool                 vtolInFwdFlight         READ vtolInFwdFlight        WRITE setVtolInFwdFlight        NOTIFY vtolInFwdFlightChanged)
@@ -824,6 +827,7 @@ public:
     void setWeaponFire(bool value);
     void setSlowSpeedMode(bool value);
     void setLight(int value);
+    void setGimbalPanValue(float value);
     void gotoNextCamera();
     int joystickMode();
     void setJoystickMode(int mode);
@@ -1149,6 +1153,9 @@ public:
     QGCCameraManager*           dynamicCameras      () { return _cameras; }
     int                         currentCamera       () {return _currentCamera;}
     int                         currentLight        () {return _currentLight;}
+    int                         currentGimbalAngle  () {return _gimbalDegrees;}
+    bool                        isGimbalActive      () {if (_gimbalDegrees != 0) return true; return false;}
+    int                         currentGimbalCompensatedAngle () {return _headingWithGimbalOffset;}
     QString                     hobbsMeter          ();
 
     /// @true: When flying a mission the vehicle is always facing towards the next waypoint
@@ -1248,6 +1255,9 @@ signals:
     void weaponsPreArmedChanged         (bool value);
     void currentCameraChanged           (int camera);
     void currentLightChanged            (int light);
+    void currentGimbalPanChanged        (int value);
+    void gimbalActiveChanged            (bool value);
+    void currentHeadingGimbalCompensationChanged (int value);
     void steeringModeChanged            (bool value);
     void speedModeChanged               (bool value);
     void telemetryRRSSIChanged          (int value);
@@ -1543,6 +1553,8 @@ private:
     bool    _slowspeedmode = false;    ///true: slow speed mode is on
     int     _currentCamera = 0;
     int     _currentLight = 0;
+    int     _gimbalDegrees = 0;  ///calculated value of the gimbal angle in degrees
+    int     _headingWithGimbalOffset = 0; ///calculated heading with gimbal angle compensation
     bool    _fourwheelsteering = false;  ///true: 4wsteering is engaged
     bool    _highspeedmode = false; ///true: high speed mode is engaged
     uint8_t _base_mode;     ///< base_mode from HEARTBEAT

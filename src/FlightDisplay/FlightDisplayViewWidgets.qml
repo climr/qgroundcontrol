@@ -171,6 +171,7 @@ Item {
         spacing:                ScreenTools.defaultFontPixelHeight * 0.25
         anchors.top:            parent.top
         anchors.topMargin:      QGroundControl.corePlugin.options.instrumentWidget ? (QGroundControl.corePlugin.options.instrumentWidget.widgetTopMargin + _toolsMargin) : 0
+        anchors.rightMargin:     ScreenTools.defaultFontPixelHeight * 2
         anchors.margins:        _toolsMargin
         anchors.right:          parent.right
         //-------------------------------------------------------
@@ -187,7 +188,7 @@ Item {
             id:                         instrumentsLoader
             anchors.margins:            _toolsMargin
             property real maxHeight:    widgetRoot ? widgetRoot.height - instrumentsColumn.y - airspaceControl.height - (ScreenTools.defaultFontPixelHeight * 4) : 0
-            active: false
+            //active: false
             states: [
                 State {
                     name:   "topRightMode"

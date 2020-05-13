@@ -34,13 +34,14 @@ Item {
     property real _defaultSize:     ScreenTools.defaultFontPixelHeight * (10)
     property real _sizeRatio:       ScreenTools.isTinyScreen ? (size / _defaultSize) * 0.5 : size / _defaultSize
     property int  _fontSize:        ScreenTools.defaultFontPointSize * _sizeRatio
-    property real _heading:         vehicle ? vehicle.heading.rawValue : 0
+    property real _heading:         vehicle ? vehicle.headingCompensatedGimbalAngle : 0//vehicle ? vehicle.heading.rawValue : 0
+    property real _gimbalheading:   activeVehicle ? activeVehicle.currentGimbalAngle : 0
     property real _headingToHome:   vehicle ? vehicle.headingToHome.rawValue : 0
     property real _groundSpeed:     vehicle ? vehicle.groundSpeed.rawValue : 0
     property real _headingToNextWP: vehicle ? vehicle.headingToNextWP.rawValue : 0
     property real _courseOverGround:activeVehicle ? activeVehicle.gps.courseOverGround.rawValue : 0
 
-    property bool usedByMultipleVehicleList:  false
+    property bool usedByMultipleVehicleList:  false    
 
     function isCOGAngleOK(){
         if(_groundSpeed < 0.5){
@@ -172,6 +173,7 @@ Item {
             opacity:            0.65
 
             QGCLabel {
+                id:                 headinglabel
                 text:               _headingString3
                 font.family:        vehicle ? ScreenTools.demiboldFontFamily : ScreenTools.normalFontFamily
                 font.pointSize:     _fontSize < 8 ? 8 : _fontSize;
@@ -181,7 +183,7 @@ Item {
                 property string _headingString: vehicle ? _heading.toFixed(0) : "OFF"
                 property string _headingString2: _headingString.length === 1 ? "0" + _headingString : _headingString
                 property string _headingString3: _headingString2.length === 2 ? "0" + _headingString2 : _headingString2
-            }
+            }          
         }
     }
 
