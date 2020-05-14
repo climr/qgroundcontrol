@@ -1418,6 +1418,7 @@ private:
     void _updatePriorityLink            (bool updateActive, bool sendCommand);
     void _commonInit                    ();
     void _startPlanRequest              ();
+    void _setVehicleUI                  ();
     void _setupAutoDisarmSignalling     ();
     void _setCapabilities               (uint64_t capabilityBits);
     void _updateArmed                   (bool armed);

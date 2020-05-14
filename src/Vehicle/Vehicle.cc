@@ -2642,6 +2642,49 @@ void Vehicle::_updateFlightTime()
     _flightTimeFact.setRawValue((double)_flightTimer.elapsed() / 1000.0);
 }
 
+void Vehicle::_setVehicleUI()  //after params loaded, this method sets the UI initial settings to match what the vehicle is set to. This is needed for settings which are based on parameters
+{
+    //figure out if we are in low speed or high speed and set UI
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "MOT_THR_MAX")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "MOT_THR_MAX");
+        int mot_throttle = (int)fact->rawValue().toInt();
+
+        if (mot_throttle == 100)  //phew, this needs to be a setting TODO
+        {
+            //high speed
+            _slowspeedmode = false;
+            emit speedModeChanged(_slowspeedmode);
+        }
+        else
+        {
+            //low speed
+            _slowspeedmode = true;
+            emit speedModeChanged(_slowspeedmode);
+        }
+
+    }
+
+    //if servo2_function is 0, then we are in 2W
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_FUNCTION")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_FUNCTION");
+        int servo2_func = (int)fact->rawValue().toInt();
+
+        if (servo2_func) // it is not disabled, so must be 4W
+        {
+            //4ws
+            _fourwheelsteering = true;
+             emit steeringModeChanged(_fourwheelsteering);
+        }
+        else
+        {
+            //2ws
+            _fourwheelsteering = false;
+            emit steeringModeChanged(_fourwheelsteering);
+        }
+
+    }
+}
+
 void Vehicle::_startPlanRequest()
 {
     if (_missionManagerInitialRequestSent) {
@@ -2729,7 +2772,10 @@ void Vehicle::_parametersReady(bool parametersReady)
     if (parametersReady) {
         _setupAutoDisarmSignalling();
         _startPlanRequest();
+        _setVehicleUI();   //patrios, set up the UI based on the loaded param set
     }
+
+
 }
 
 void Vehicle::_sendQGCTimeToVehicle()
@@ -4043,7 +4089,7 @@ void Vehicle::setGimbalPanValue(float value)
                                        0);
     sendMessageOnLink(priorityLink(), msg);
 
-    _headingWithGimbalOffset = (_headingFact.rawValue().toInt() + _gimbalDegrees) % 360;
+    _headingWithGimbalOffset = (_headingFact.rawValue().toInt() - _gimbalDegrees) % 360;
     if (_headingWithGimbalOffset < 0)
         _headingWithGimbalOffset += 360;
     //qDebug() <<_headingFact.rawValue().toInt() << _gimbalDegrees << "vehicle angle plus gimbal" << _headingWithGimbalOffset;
