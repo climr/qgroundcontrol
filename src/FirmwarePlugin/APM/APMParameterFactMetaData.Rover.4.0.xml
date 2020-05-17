@@ -8,14 +8,14 @@
 
 <param humanName="Amarok Speed Mode" name="APMrover2:SPEED_MODE" documentation="This value indicates if the vehicle is in high or low speed mode" user="Advanced">
     <value code="0">Low Speed</value>
-    <value code="1">High Speed</value>
+    <value code="1">High Speed</value>    
 </param>
 
 <param humanName="Amarok Low Speed Throttle" name="APMrover2:SPEED_LOW_THR" documentation="This value is set to MOT_THR_MAX when in low speed mode" user="Amarok">
     <field name="Range">30 90</field>
     <field name="Increment">1</field>
     <field name="Units">%</field>
-    <field name="UnitText">percentage</field>
+    <field name="UnitText">percentage</field>    
 </param>
 
 <param humanName="Amarok Low Speed Throttle" name="APMrover2:SPEED_HIGH_THR" documentation="This value is set to MOT_THR_MAX when in high speed mode" user="Amarok">
@@ -135,6 +135,13 @@
     <field name="Increment">1</field>
     <field name="Units">PWM</field>
     <field name="UnitText">pwm in microseconds</field>
+</param>
+
+<param humanName="Amarok Gimbal Range" name="APMrover2:GIMBAL_RANGE" documentation="This maximum pan range (degrees) of the gimbal" user="Amarok">
+    <field name="Range">90 270</field>
+    <field name="Increment">1</field>
+    <field name="Units">deg</field>
+    <field name="UnitText">degrees</field>
 </param>
 
 
@@ -11536,7 +11543,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim PWM" name="SERVO1_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Standard">
+<param humanName="Trim Front Steerng Servo" name="SERVO1_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>
@@ -11661,7 +11668,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim PWM" name="SERVO2_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Standard">
+<param humanName="Trim Rear Steering Servo" name="SERVO2_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>
@@ -11786,7 +11793,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim PWM" name="SERVO3_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Standard">
+<param humanName="Trim Throttle PWM" name="SERVO3_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>

@@ -2649,6 +2649,8 @@ void Vehicle::_setVehicleUI()  //after params loaded, this method sets the UI in
 {
     //figure out if we are in low speed or high speed and set UI
 
+    qDebug() << "setting up vehicle UI";
+
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_MODE")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_MODE");
         int speed_mode = (int)fact->rawValue().toInt();
@@ -4084,6 +4086,11 @@ void Vehicle::setGimbalPanValue(float value)
         servoChannel = (int)fact->rawValue().toInt();
         }
 
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_RANGE")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_RANGE");
+        gimbalSwing = (int)fact->rawValue().toInt();
+        }
+
 
 
     if (value < 0)
@@ -4143,6 +4150,27 @@ void Vehicle::setLight(int c)
     int irChannel = 8;
     int servoLow = 900;
     int servoHigh = 2000;
+
+    //get light info from params
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_OV_SER")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_OV_SER");
+        overtChannel = (int)fact->rawValue().toInt();
+    }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_IR_SER")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_IR_SER");
+        irChannel = (int)fact->rawValue().toInt();
+        }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_ON")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_ON");
+        servoHigh = (int)fact->rawValue().toInt();
+        }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_OFF")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_OFF");
+        servoLow = (int)fact->rawValue().toInt();
+        }
     //set light to the appropriate mode
     _currentLight = c;
     emit currentLightChanged(c);
@@ -4406,9 +4434,27 @@ void Vehicle::setWeaponsArmed(bool value)
 
 void Vehicle::setWeaponFire(bool value)
 {
-    int servoChannel = 6;  //todo, move this to settings
+    int servoChannel = 6;
     int servoHigh = 2000;
     int servoLow = 900;
+
+    //get weapon info from params
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "WEAPON_SERVO")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "WEAPON_SERVO");
+        servoChannel = (int)fact->rawValue().toInt();
+    }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "WEAPON_MAX")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "WEAPON_MAX");
+        servoHigh = (int)fact->rawValue().toInt();
+        }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "WEAPON_MIN")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "WEAPON_MIN");
+        servoLow = (int)fact->rawValue().toInt();
+        }
+
+
     if (!value)  //false
     {
         sendMavCommand(defaultComponentId(),
