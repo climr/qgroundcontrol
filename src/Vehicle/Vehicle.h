@@ -349,6 +349,7 @@ private:
     Fact            _currentDateFact;
 };
 
+
 class VehicleEstimatorStatusFactGroup : public FactGroup
 {
     Q_OBJECT
@@ -532,6 +533,8 @@ public:
         CheckListFailed,
     };
     Q_ENUM(CheckList)
+
+    Q_PROPERTY(int                  gimbalRate              READ gimbalRate                                            CONSTANT)
     Q_PROPERTY(bool                 weaponsPreArmed         READ weaponsPreArmed                                        NOTIFY weaponsPreArmedChanged)
     Q_PROPERTY(bool                 weaponsArmed            READ weaponsArmed                                           NOTIFY weaponsArmedChanged)
     Q_PROPERTY(bool                 fourWheelSteering       READ fourWheelSteering                                      NOTIFY steeringModeChanged)
@@ -648,7 +651,7 @@ public:
     Q_PROPERTY(qreal                gimbalYaw               READ gimbalYaw                                              NOTIFY gimbalYawChanged)
     Q_PROPERTY(bool                 gimbalData              READ gimbalData                                             NOTIFY gimbalDataChanged)
     Q_PROPERTY(bool                 isROIEnabled            READ isROIEnabled                                           NOTIFY isROIEnabledChanged)
-    Q_PROPERTY(CheckList            checkListState          READ checkListState         WRITE setCheckListState         NOTIFY checkListStateChanged)
+    Q_PROPERTY(CheckList            checkListState          READ checkListState         WRITE setCheckListState         NOTIFY checkListStateChanged)  
 
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
@@ -832,7 +835,7 @@ public:
     int joystickMode();
     void setJoystickMode(int mode);
 
-    /// List of joystick mode names
+       /// List of joystick mode names
     QStringList joystickModes();
 
     bool joystickEnabled();
@@ -917,6 +920,7 @@ public:
     bool armed      () { return _armed; }
     bool weaponsArmed      () { return _weaponsArmed; }
     bool weaponsPreArmed    () { return _weaponsPreArmed; }
+    int gimbalRate          () {return _gimbalRate;}
     bool slowSpeedMode  () { return _slowspeedmode;}
     bool fourWheelSteering       () { return _fourwheelsteering; }
     void setArmed   (bool armed);
@@ -1551,10 +1555,12 @@ private:
     bool    _armed;         ///< true: vehicle is armed
     bool    _weaponsArmed = false;  ///true: weapon system is armed
     bool    _weaponsPreArmed = false;  ///true: weapon system is pre armed
+    int     _gimbalRate = 15;
     bool    _slowspeedmode = false;    ///true: slow speed mode is on
     int     _currentCamera = 0;
     int     _currentLight = 0;
     int     _gimbalDegrees = 0;  ///calculated value of the gimbal angle in degrees
+    bool    _centeredGimbal = false;  ///track if the gimbal has been centered, to avoid excessive set servo commands
     int     _headingWithGimbalOffset = 0; ///calculated heading with gimbal angle compensation
     bool    _fourwheelsteering = false;  ///true: 4wsteering is engaged
     bool    _highspeedmode = false; ///true: high speed mode is engaged
@@ -1671,7 +1677,9 @@ private:
     VehicleClockFactGroup           _clockFactGroup;
     VehicleSetpointFactGroup        _setpointFactGroup;
     VehicleDistanceSensorFactGroup  _distanceSensorFactGroup;
-    VehicleEstimatorStatusFactGroup _estimatorStatusFactGroup;
+    VehicleEstimatorStatusFactGroup _estimatorStatusFactGroup;    
+
+
 
     static const char* _rollFactName;
     static const char* _pitchFactName;

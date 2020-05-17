@@ -36,6 +36,7 @@ public:
     Q_PROPERTY(QString              currentGroup        MEMBER _currentGroup        NOTIFY currentGroupChanged)
     Q_PROPERTY(QmlObjectListModel*  parameters          MEMBER _parameters          CONSTANT)
     Q_PROPERTY(QStringList          categories          MEMBER _categories          CONSTANT)
+    Q_PROPERTY(QStringList          amarokonly          MEMBER _amarokonly          CONSTANT)
     Q_PROPERTY(bool                 showModifiedOnly    MEMBER _showModifiedOnly    NOTIFY showModifiedOnlyChanged)
 
     Q_INVOKABLE QStringList getGroupsForCategory(const QString& category);
@@ -66,6 +67,7 @@ private:
 
 private:
     QStringList         _categories;
+    QStringList         _amarokonly = { "Amarok" };
     QString             _searchText;
     QString             _currentCategory;
     QString             _currentGroup;

@@ -18,7 +18,7 @@
 #include "VideoManager.h"
 #include "QGCCameraManager.h"
 #include "QGCCameraControl.h"
-
+#include "ParameterManager.h"
 #include <QSettings>
 
 QGC_LOGGING_CATEGORY(JoystickLog,       "JoystickLog")
@@ -125,6 +125,7 @@ Joystick::Joystick(const QString& name, int axisCount, int buttonCount, int hatC
     _updateTXModeSettingsKey(_multiVehicleManager->activeVehicle());
     _loadSettings();
     connect(_multiVehicleManager, &MultiVehicleManager::activeVehicleChanged, this, &Joystick::_activeVehicleChanged);
+
 }
 
 Joystick::~Joystick()
@@ -174,7 +175,7 @@ void Joystick::_setDefaultCalibration(void) {
     _deadband       = false;
     _axisFrequency  = 25.0f;
     _buttonFrequency= 5.0f;
-    _throttleMode   = ThrottleModeDownZero;
+    _throttleMode   = ThrottleModeCenterZero;  //was ThrottleModeDownZero
     _calibrated     = true;
     _circleCorrection = false;
     _targetGimbalYaw = 0.0f;
@@ -633,7 +634,13 @@ void Joystick::_handleAxis()
 
 
                 //gimbal accumulator, this is used to smooth out the gimbal response with fast servos
-                int gimbalRate = 20;  //speed of gimbal movement 1-100%, TODO make setting
+                int gimbalRate = 20;
+                //get gimbalRate from parameters
+                if (_multiVehicleManager->activeVehicle()->parameterManager()->parameterExists(FactSystem::defaultComponentId, "GIMBAL_SPEED")) {
+                    Fact* fact = _multiVehicleManager->activeVehicle()->parameterManager()->getParameter(FactSystem::defaultComponentId, "GIMBAL_SPEED");
+                    gimbalRate = (int)fact->rawValue().toInt();
+                 }
+
                 static float gimbalYaw_accu = 0.f;
                 if (gimbalYaw == 0.f)
                 {

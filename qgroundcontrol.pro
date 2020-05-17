@@ -1479,4 +1479,4 @@ DISTFILES += \
     src/FlightMap/Widgets/QGCWaypointEditor.qml \
     src/FlightMap/Widgets/ValuePageWidget.qml \
     src/FlightMap/Widgets/VibrationPageWidget.qml \
-    src/FlightMap/Widgets/VideoPageWidget.qml
+    src/FlightMap/Widgets/VideoPageWidget.qmlandroid: include(C:/Users/Brad/AppData/Local/Android/Sdk/android_openssl/openssl.pri)

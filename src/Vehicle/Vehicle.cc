@@ -62,6 +62,7 @@ const char* Vehicle::_settingsGroup =               "Vehicle%1";        // %1 re
 const char* Vehicle::_joystickModeSettingsKey =     "JoystickMode";
 const char* Vehicle::_joystickEnabledSettingsKey =  "JoystickEnabled";
 
+
 const char* Vehicle::_rollFactName =                "roll";
 const char* Vehicle::_pitchFactName =               "pitch";
 const char* Vehicle::_headingFactName =             "heading";
@@ -2322,6 +2323,7 @@ void Vehicle::_loadSettings()
     }
     QSettings settings;
     settings.beginGroup(QString(_settingsGroup).arg(_id));
+
     bool convertOk;
     _joystickMode = static_cast<JoystickMode_t>(settings.value(_joystickModeSettingsKey, JoystickModeRC).toInt(&convertOk));
     if (!convertOk) {
@@ -2340,7 +2342,7 @@ void Vehicle::_saveSettings()
 
     settings.beginGroup(QString(_settingsGroup).arg(_id));
 
-    settings.setValue(_joystickModeSettingsKey, _joystickMode);
+    settings.setValue(_joystickModeSettingsKey, _joystickMode);   
 
     // The joystick enabled setting should only be changed if a joystick is present
     // since the checkbox can only be clicked if one is present
@@ -2353,6 +2355,7 @@ int Vehicle::joystickMode()
 {
     return _joystickMode;
 }
+
 
 void Vehicle::setJoystickMode(int mode)
 {
@@ -2645,18 +2648,21 @@ void Vehicle::_updateFlightTime()
 void Vehicle::_setVehicleUI()  //after params loaded, this method sets the UI initial settings to match what the vehicle is set to. This is needed for settings which are based on parameters
 {
     //figure out if we are in low speed or high speed and set UI
-    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "MOT_THR_MAX")) {
-        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "MOT_THR_MAX");
-        int mot_throttle = (int)fact->rawValue().toInt();
 
-        if (mot_throttle == 100)  //phew, this needs to be a setting TODO
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_MODE")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_MODE");
+        int speed_mode = (int)fact->rawValue().toInt();
+
+        if (speed_mode)
         {
+            qDebug() << "detected high speed mode";
             //high speed
             _slowspeedmode = false;
             emit speedModeChanged(_slowspeedmode);
         }
         else
         {
+            qDebug() << "detected low speed mode";
             //low speed
             _slowspeedmode = true;
             emit speedModeChanged(_slowspeedmode);
@@ -4049,12 +4055,37 @@ void Vehicle::set4WSteeringMode(bool value)
 void Vehicle::setGimbalPanValue(float value)
 {
     //set servo and set vehicle gimble pan value in degrees
-
     int midpoint = 1500;
     int upperPoint = 2200;
     int lowerPoint = 800;
     int servoValue = 1500;
     int gimbalSwing = 170;  //degrees the gimbal can swing
+    int servoChannel = 5;
+
+    //pull in values from fact manager
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_MID")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_MID");
+        midpoint = (int)fact->rawValue().toInt();
+    }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_MAX")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_MAX");
+        upperPoint = (int)fact->rawValue().toInt();
+        }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_MIN")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_MIN");
+        lowerPoint = (int)fact->rawValue().toInt();
+        }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_SERVO")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_SERVO");
+        servoChannel = (int)fact->rawValue().toInt();
+        }
+
+
+
     if (value < 0)
     {
       servoValue = (int)((midpoint - lowerPoint) * value) + midpoint;
@@ -4066,39 +4097,44 @@ void Vehicle::setGimbalPanValue(float value)
       _gimbalDegrees = (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)servoValue - (float)midpoint));
     }
 
-    //qDebug() << "servo value" << servoValue << "gimbal degrees" << _gimbalCalc;
+    if (!_centeredGimbal)
+    {
+        mavlink_message_t msg;
+        mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                           _mavlink->getComponentId(),
+                                           priorityLink()->mavlinkChannel(),
+                                           &msg,
+                                           _id,
+                                           defaultComponentId(),   // target component
+                                           MAV_CMD_DO_SET_SERVO,    // command id
+                                           0, //first transmission
+                                           servoChannel,
+                                           servoValue,
+                                           0,
+                                           0,
+                                           0,
+                                           0,
+                                           0);
 
-    //sanity check, limit _gimbalDegrees to +- 90
-    //_gimbalCalc = std::max(static_cast<int>(-90), std::min(_gimbalDegrees, static_cast<int>(90)));
+        sendMessageOnLink(priorityLink(), msg);
 
-    mavlink_message_t msg;
-    mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
-                                       _mavlink->getComponentId(),
-                                       priorityLink()->mavlinkChannel(),
-                                       &msg,
-                                       _id,
-                                       defaultComponentId(),   // target component
-                                       MAV_CMD_DO_SET_SERVO,    // command id
-                                       0, //first transmission
-                                       5,
-                                       servoValue,
-                                       0,
-                                       0,
-                                       0,
-                                       0,
-                                       0);
-    sendMessageOnLink(priorityLink(), msg);
+        _headingWithGimbalOffset = (_headingFact.rawValue().toInt() - _gimbalDegrees) % 360;
+        if (_headingWithGimbalOffset < 0)
+            _headingWithGimbalOffset += 360;
 
-    _headingWithGimbalOffset = (_headingFact.rawValue().toInt() - _gimbalDegrees) % 360;
-    if (_headingWithGimbalOffset < 0)
-        _headingWithGimbalOffset += 360;
-    //qDebug() <<_headingFact.rawValue().toInt() << _gimbalDegrees << "vehicle angle plus gimbal" << _headingWithGimbalOffset;
-    emit currentHeadingGimbalCompensationChanged(_headingWithGimbalOffset);
-    emit currentGimbalPanChanged(_gimbalDegrees);
+        emit currentHeadingGimbalCompensationChanged(_headingWithGimbalOffset);
+        emit currentGimbalPanChanged(_gimbalDegrees);
+    }
     if (_gimbalDegrees != 0)
         emit gimbalActiveChanged(true);
     else
         emit gimbalActiveChanged(false);
+
+    //handle centered gimbal so we don't send set servo to the center position over and over
+    if (value != 0.f)
+        _centeredGimbal = false;
+    else
+        if (_centeredGimbal == false) _centeredGimbal = true;
 }
 
 void Vehicle::setLight(int c)
@@ -4235,13 +4271,30 @@ void Vehicle::gotoNextCamera()
 void Vehicle::setSlowSpeedMode(bool value)
 {
     _slowspeedmode = value;
-
+    int low_throttle;
+    int high_throttle;
     if (value)
     {
-        //slow, set throttle to 50%
-        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "MOT_THR_MAX")) {
+        //slow, set throttle to value inticated
+        //first get target throttle speed, if can't get this the abort
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_LOW_THR")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_LOW_THR");
+            low_throttle = (int)fact->rawValue().toInt();
+
+        }
+        else
+           return;
+
+       //set param indicating we are in slow speed
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_MODE")) {
+          Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_MODE");
+          fact->setRawValue(QVariant(0));
+        }
+
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "MOT_THR_MAX"))
+            {
             Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "MOT_THR_MAX");
-            fact->setRawValue(QVariant(30));  //work to pull these in from settings
+            fact->setRawValue(QVariant(low_throttle));
 
             //set steering servo trims to high for slow speed manuvering
             //get servo1 trim
@@ -4252,11 +4305,11 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo1 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO1_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO1_MAX");
-                    fact->setRawValue(servo1_trim + 400);  //work to pull these in from settings
+                    fact->setRawValue(servo1_trim + 500);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO1_MIN")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO1_MIN");
-                    fact->setRawValue(servo1_trim - 400);  //work to pull these in from settings
+                    fact->setRawValue(servo1_trim - 500);  //work to pull these in from settings
                 }
             }
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_TRIM")) {
@@ -4266,11 +4319,11 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo2 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
-                    fact->setRawValue(servo2_trim + 400);  //work to pull these in from settings
+                    fact->setRawValue(servo2_trim + 500);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                    fact->setRawValue(servo2_trim - 400);  //work to pull these in from settings
+                    fact->setRawValue(servo2_trim - 500);  //work to pull these in from settings
                 }
             }
         }
@@ -4278,10 +4331,24 @@ void Vehicle::setSlowSpeedMode(bool value)
     }
     else
     {
-        //fast, throttle to 100%
+        //fast
+        //first get target throttle speed, if can't get this the abort
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_HIGH_THR")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_HIGH_THR");
+            high_throttle = (int)fact->rawValue().toInt();
+        }
+        else
+           return;
+
+        //set param indicating we are in fast speed mode
+         if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_MODE")) {
+           Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_MODE");
+           fact->setRawValue(QVariant(1));
+         }
+
         if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "MOT_THR_MAX")) {
             Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "MOT_THR_MAX");
-            fact->setRawValue(QVariant(100));  //work to pull these in from settings
+            fact->setRawValue(QVariant(high_throttle));
 
             //set steering servo trims to low for high speed manuvering
             //get servo1 trim
@@ -4466,6 +4533,7 @@ void Vehicle::_vehicleParamLoaded(bool ready)
     //   way to update this?
     if(ready) {
         emit hobbsMeterChanged();
+        qDebug() << "vehicle loaded and params ready";
     }
 }
 

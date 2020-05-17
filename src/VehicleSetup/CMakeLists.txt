@@ -20,6 +20,7 @@ SOURCES
 	JoystickConfig.qml
 	JoystickConfigAdvanced.qml
 	SetupView.qml
+	AmarokConfig.qml
 )
 
 target_link_libraries(VehicleSetup

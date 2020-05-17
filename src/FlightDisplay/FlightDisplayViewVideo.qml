@@ -24,7 +24,7 @@ Item {
     id:     root
     clip:   true
     property double _ar:                QGroundControl.videoManager.aspectRatio
-    property bool   _showGrid:          activeVehicle.currentCamera === 0 ? true : false  //QGroundControl.settingsManager.videoSettings.gridLines.rawValue > 0
+    property bool   _showGrid:          activeVehicle ? (activeVehicle.currentCamera === 0 ? true : false) : false  //QGroundControl.settingsManager.videoSettings.gridLines.rawValue > 0
     property var    _videoReceiver:     QGroundControl.videoManager.videoReceiver
     property var    _dynamicCameras:    activeVehicle ? activeVehicle.dynamicCameras : null
     property bool   _connected:         activeVehicle ? !activeVehicle.connectionLost : false
@@ -166,16 +166,19 @@ Item {
                         font.pointSize:     mainIsMap ? ScreenTools.smallFontPointSize : ScreenTools.largeFontPointSize
                         anchors.centerIn:   parent
                         function getCamView() {
-                            if(activeVehicle.currentCamera === 0) {
-                                return "FRONT VIEW"
+                            if (activeVehicle)
+                            {
+                                if(activeVehicle.currentCamera === 0) {
+                                    return "FRONT VIEW"
+                                }
+                                else if(activeVehicle.currentCamera === 1) {
+                                    return "FRONT VIEW THERMAL"
+                                }
+                                else
+                                    return "REAR VIEW"
                             }
-                            else if(activeVehicle.currentCamera === 1) {
-                                return "FRONT VIEW THERMAL"
-                            }
-                            else
-                                return "REAR VIEW"
+                                return "Loading.."
                         }
-
                     }
                 }
 

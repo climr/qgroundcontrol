@@ -21,9 +21,9 @@ import QGroundControl.Palette       1.0
 
 Rectangle {
     id:             root
-    width:          100//_outerRadius * 3//compass.width   + ScreenTools.defaultFontPixelWidth  * 3//getPreferredInstrumentWidth()
-    height:         100//_outerRadius * 3//compass.height   + ScreenTools.defaultFontPixelWidth  * 3//_outerRadius * 2
-    radius:         100
+    width:          120//_outerRadius * 3//compass.width   + ScreenTools.defaultFontPixelWidth  * 3//getPreferredInstrumentWidth()
+    height:         120//_outerRadius * 3//compass.height   + ScreenTools.defaultFontPixelWidth  * 3//_outerRadius * 2
+    radius:         120
     //radius:         _outerRadius
     //anchors.Margin:       ScreenTools.defaultFontPixelHeight * 2
     color:          qgcPal.window
@@ -39,7 +39,7 @@ Rectangle {
     property real   _labelFontSize:     ScreenTools.defaultFontPointSize * 0.75 * _sizeRatio
     property real   _spacing:           ScreenTools.defaultFontPixelHeight * 0.33
     property real   _topBottomMargin:   (width * 0.05) / 2
-    property real   _availableValueHeight: maxHeight - (root.height + _valuesItem.anchors.topMargin)
+    // property real   _availableValueHeight: maxHeight - (root.height + _valuesItem.anchors.topMargin)
 
     // Prevent all clicks from going through to lower layers
     DeadMouseArea {
@@ -61,9 +61,10 @@ Rectangle {
     QGCCompassWidget {
         id:                 compass
         anchors.leftMargin: _spacing
-        anchors.left:       attitude.right
+        //anchors.left:       attitude.right
+       // anchors.left:       parent.right
         //size:               _innerRadius * 2
-        size: 100
+        size: 120
         vehicle:            activeVehicle
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter

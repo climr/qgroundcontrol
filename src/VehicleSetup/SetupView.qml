@@ -293,6 +293,17 @@ Rectangle {
                 visible:            QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable &&
                                     !QGroundControl.multiVehicleManager.activeVehicle.highLatencyLink &&
                                     _corePlugin.showAdvancedUI
+                text:               qsTr("Amarok Setup")
+                Layout.fillWidth:   true
+                onClicked:          showPanel(this, "AmarokConfig.qml")
+            }
+
+            SubMenuButton {
+                setupIndicator:     false
+                exclusiveGroup:     setupButtonGroup
+                visible:            QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable &&
+                                    !QGroundControl.multiVehicleManager.activeVehicle.highLatencyLink &&
+                                    _corePlugin.showAdvancedUI
                 text:               qsTr("Parameters")
                 Layout.fillWidth:   true
                 onClicked:          showPanel(this, "SetupParameterEditor.qml")

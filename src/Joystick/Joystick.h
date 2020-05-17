@@ -127,6 +127,7 @@ public:
 
     void setGimbalEnabled           (bool set);
 
+
     /// Start the polling thread which will in turn emit joystick signals
     void startPolling(Vehicle* vehicle);
     void stopPolling(void);
@@ -205,13 +206,14 @@ signals:
     void manualControlGimbal        (float gimbalPitch, float gimbalYaw);
 
     void setDoSetServo              (int channel, int value);
-    void setGimbalPanValue          (float value);
+    void setCircleCorrection          (float value);
     void set4WSteeringMode          (bool value);
     void setLightMode               (int value);
     void setWeaponsPreArmed         (bool value);
     void setWeaponsArmed            (bool value);
     void setWeaponFire              (bool value);
     void setSlowSpeedMode           (bool value);
+    void setGimbalPanValue          (float value);
 
 
     void buttonActionTriggered      (int action);

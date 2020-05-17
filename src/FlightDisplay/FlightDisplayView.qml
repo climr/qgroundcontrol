@@ -699,14 +699,19 @@ Item {
                     QGCLabel {
                         text: getCamName()
                         color: "white"
-                        function getCamName() {                          
-                            if(activeVehicle.currentCamera === 0)
-                                return qsTr("Front")
-                            else if (activeVehicle.currentCamera === 1)
-                                return qsTr("Thermal")
-                            else
-                                return qsTr("Rear")
+                        function getCamName() {
+                            if (activeVehicle)
+                            {
+                                if(activeVehicle.currentCamera === 0)
+                                    return qsTr("Front")
+                                else if (activeVehicle.currentCamera === 1)
+                                    return qsTr("Thermal")
+                                else
+                                    return qsTr("Rear")
+                                }
+                            return qsTr("Loading..")
                             }
+
 
                     }
                     QGCLabel {
@@ -717,6 +722,8 @@ Item {
                         text: getLightModeName()
                         color: "white"
                         function getLightModeName() {
+                            if (activeVehicle)
+                            {
                             if(activeVehicle.currentLight === 0)
                                 return qsTr("Off")
                             else if (activeVehicle.currentLight === 1)
@@ -724,6 +731,8 @@ Item {
                             else
                                 return qsTr("IR On")
                             }
+                            return  qsTr("Loading..")
+                        }
 
                     }
 
@@ -732,7 +741,7 @@ Item {
                         color: "white"
                     }
                     QGCLabel {
-                        text: activeVehicle.fourWheelSteering ? "4W" : "2W";
+                        text: (activeVehicle) ? (activeVehicle.fourWheelSteering ? "4W" : "2W") : "Loading..";
                         color: "white"
                     }
                     QGCLabel {
@@ -740,7 +749,7 @@ Item {
                         color: "white"
                     }
                     QGCLabel {
-                        text: activeVehicle.slowSpeedMode ? "Slow" : "Fast";
+                        text: (activeVehicle) ? (activeVehicle.slowSpeedMode ? "Slow" : "Fast") : "Loading..";
                         color: "white"
                     }
                     QGCLabel {
@@ -749,15 +758,19 @@ Item {
                     }
                     QGCLabel {
                         text: getArmStatus()
-                        color: (activeVehicle.weaponsPreArmed) ? "red" : "white"
+                        color: (activeVehicle) ? ((activeVehicle.weaponsPreArmed) ? "red" : "white") : "Loading..";
                          function getArmStatus() {
+                             if (activeVehicle)
+                            {
                              if (activeVehicle.weaponsArmed && activeVehicle.weaponsPreArmed)
                                  return qsTr("FIRE STEP 1 of 2")
                              if (activeVehicle.weaponsPreArmed)
                                  return qsTr("ARMED")
                              else
                                  return qsTr("Disarmed")
-                         }
+                            }
+                            return  qsTr("Loading..")
+                        }
                     }
                 }
             }
@@ -806,7 +819,7 @@ Item {
         ToolStrip {
             //visible:            (activeVehicle ? activeVehicle.guidedModeSupported : true) && !QGroundControl.videoManager.fullScreen
             visible: false
-  //          id:                 toolStrip
+            id:                 toolStrip
 
             anchors.leftMargin: isInstrumentRight() ? _toolsMargin : undefined
             anchors.left:       isInstrumentRight() ? _mapAndVideo.left : undefined

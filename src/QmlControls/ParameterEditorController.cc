@@ -28,6 +28,7 @@ ParameterEditorController::ParameterEditorController(void)
     const QMap<QString, QMap<QString, QStringList> >& categoryMap = _parameterMgr->getComponentCategoryMap(_vehicle->defaultComponentId());
     _categories = categoryMap.keys();
 
+
     // Move default category to front
     _categories.removeOne(_currentCategory);
     _categories.prepend(_currentCategory);
