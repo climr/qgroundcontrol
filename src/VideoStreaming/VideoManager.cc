@@ -71,7 +71,7 @@ void VideoManager::toggleLocalVideoRecord()
         _videoReceiver->stopRecording();
     }
     else if (!_videoReceiver->recording() && _videoReceiver->videoRunning())
-    {
+    {                
         qDebug() << "start video record";
         _say(tr("%1: Video Recording Started").arg(_vehicleIdSpeech()));
         _videoReceiver->startRecording();
@@ -91,6 +91,8 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    QString videoSource = _videoSettings->videoSource()->rawValue().toString();
    connect(_videoSettings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
    connect(_videoSettings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
+   connect(_videoSettings->audioUdpPort(),  &Fact::rawValueChanged, this, &VideoManager::_audioUdpPortChanged);
+   connect(_videoSettings->audio(),         &Fact::rawValueChanged, this, &VideoManager::_audioChanged);
    connect(_videoSettings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
    connect(_videoSettings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
    connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
@@ -248,6 +250,33 @@ void
 VideoManager::_udpPortChanged()
 {
     restartVideo();
+}
+
+void
+VideoManager::_audioChanged()
+{
+    if(!_videoSettings || !_videoReceiver)
+        return;
+
+    _videoReceiver->stopAudio();
+
+}
+void
+VideoManager::_audioUdpPortChanged()
+{
+#if defined(QGC_GST_STREAMING)
+    qCDebug(VideoManagerLog) << "stopping audio stream due to port change";
+    _videoReceiver->stopAudio();
+
+#endif
+    if (_activeVehicle)
+    {
+         _videoReceiver->setAudioUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+    }
+    else
+    {
+        _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -432,13 +461,22 @@ VideoManager::_updateSettings()
     {
         qDebug() << "multicast source";
         if (_activeVehicle)
+        {
              _videoReceiver->setUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->udpPort()->rawValue().toInt()));
+             _videoReceiver->setAudioUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+        }
         else
+        {
             _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));     //use unicast until a vehicle is connected
+            _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+        }
     }
 
     else if (source == VideoSettings::videoSourceUDPH264)
+    {
         _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+        _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+    }
     else if (source == VideoSettings::videoSourceUDPH265)
         _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceMPEGTS)
@@ -456,6 +494,8 @@ VideoManager::restartVideo()
 #if defined(QGC_GST_STREAMING)
     qCDebug(VideoManagerLog) << "Restart video streaming";
     stopVideo();
+    _videoReceiver->stopAudio();
+
     _updateSettings();
     startVideo();
     emit aspectRatioChanged();

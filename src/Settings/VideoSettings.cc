@@ -85,6 +85,7 @@ DECLARE_SETTINGSFACT(VideoSettings, rtspTimeout)
 DECLARE_SETTINGSFACT(VideoSettings, streamEnabled)
 DECLARE_SETTINGSFACT(VideoSettings, disableWhenDisarmed)
 DECLARE_SETTINGSFACT(VideoSettings, lowLatencyMode)
+DECLARE_SETTINGSFACT(VideoSettings, audioUdpPort)
 
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
 {
@@ -113,6 +114,15 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, udpPort)
     return _udpPortFact;
 }
 
+DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, audio)
+{
+    if (!_audioFact) {
+        _audioFact = _createSettingsFact(audioName);
+        connect(_audioFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+    }
+    return _audioFact;
+}
+
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, rtspUrl)
 {
     if (!_rtspUrlFact) {
@@ -129,6 +139,11 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, tcpUrl)
         connect(_tcpUrlFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
     }
     return _tcpUrlFact;
+}
+
+bool VideoSettings::audioEnabled(void)
+{
+      return audio()->rawValue().toBool();
 }
 
 bool VideoSettings::streamConfigured(void)
@@ -172,4 +187,5 @@ bool VideoSettings::streamConfigured(void)
 void VideoSettings::_configChanged(QVariant)
 {
     emit streamConfiguredChanged();
+    emit audioEnabledChanged();
 }

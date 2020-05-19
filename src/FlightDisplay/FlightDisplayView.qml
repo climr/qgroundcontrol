@@ -60,7 +60,9 @@ Item {
     property var    _videoReceiver:                 QGroundControl.videoManager.videoReceiver
     property bool   _recordingVideo:                _videoReceiver && _videoReceiver.recording
     property bool   _videoRunning:                  _videoReceiver && _videoReceiver.videoRunning
+    property bool   _audioRunning:                  _videoReceiver && _videoReceiver.audioRunning
     property bool   _streamingEnabled:              QGroundControl.settingsManager.videoSettings.streamConfigured
+    property bool   _audioEnabled:                  QGroundControl.settingsManager.videoSettings.audioEnabled
 
     readonly property var       _dynamicCameras:        activeVehicle ? activeVehicle.dynamicCameras : null
     readonly property bool      _isCamera:              _dynamicCameras ? _dynamicCameras.cameras.count > 0 : false
@@ -640,8 +642,9 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     QGCLabel {
-                        text: qsTr("Video Recording:")
+                        text: qsTr("Audio Enable:")
                         color: "white"
+                        visible:  QGroundControl.videoManager.isGStreamer && _videoRunning && _audioEnabled
                     }
                     Item {
                        // anchors.right:              parent.right
@@ -652,7 +655,61 @@ Item {
                         height:                     ScreenTools.defaultFontPixelHeight * 2
                         width:                      height
                         z:                          _mapAndVideo.z + 5
-                        visible:            true //QGroundControl.videoManager.isGStreamer
+                        visible:                    QGroundControl.videoManager.isGStreamer && _videoRunning && _audioEnabled
+                        Rectangle {
+                            id:                 audioBtnBackground
+                            anchors.top:        parent.top
+                            anchors.bottom:     parent.bottom
+                            width:              height
+                            radius:             height //_recordingVideo ? 0 : height
+                            color:              (_audioRunning && _streamingEnabled) ? "blue" : "gray"//(_videoRunning && _streamingEnabled) ? "red" : "gray"
+                            SequentialAnimation on opacity {
+                                running:        _audioRunning
+                                loops:          Animation.Infinite
+                                PropertyAnimation { to: 0.5; duration: 500 }
+                                PropertyAnimation { to: 1.0; duration: 500 }
+                            }
+                        }
+                        QGCColoredImage {
+                            anchors.top:                parent.top
+                            anchors.bottom:             parent.bottom
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            width:                      height * 0.625
+                            sourceSize.width:           width
+                            source:                     "/qmlimages/SpeakerIcon.svg"
+                            visible:                    audioBtnBackground.visible
+                            fillMode:                   Image.PreserveAspectFit
+                            color:                      "white"
+                        }
+                        MouseArea {
+                            anchors.fill:   parent
+                            enabled:        _videoRunning && _streamingEnabled
+                            onClicked: {
+                                if (_audioRunning) {
+                                    _videoReceiver.stopAudio()
+                                    // reset blinking animation
+                                    audioBtnBackground.opacity = 1
+                                } else {
+                                    _videoReceiver.startAudio()
+                                }
+                            }
+                        }
+                    }
+                    QGCLabel {
+                        text: qsTr("Video Recording:")
+                        color: "white"
+                        visible:  QGroundControl.videoManager.isGStreamer && _videoRunning
+                    }
+                    Item {
+                       // anchors.right:              parent.right
+                       // anchors.bottom:             patriosBox.top
+                      //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+                      //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
+                      //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        width:                      height
+                        z:                          _mapAndVideo.z + 5
+                        visible:                    QGroundControl.videoManager.isGStreamer && _videoRunning
                         Rectangle {
                             id:                 recordBtnBackground
                             anchors.top:        parent.top
@@ -694,7 +751,7 @@ Item {
                     }                   
                     QGCLabel {
                         text: qsTr("Active Camera:")
-                        color: "white"
+                        color: "white"                    
                     }
                     QGCLabel {
                         text: getCamName()
@@ -702,6 +759,8 @@ Item {
                         function getCamName() {
                             if (activeVehicle)
                             {
+                                if (!_videoRunning)
+                                    return qsTr("No Stream")
                                 if(activeVehicle.currentCamera === 0)
                                     return qsTr("Front")
                                 else if (activeVehicle.currentCamera === 1)

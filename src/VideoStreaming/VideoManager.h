@@ -99,6 +99,8 @@ signals:
 protected slots:
     void _videoSourceChanged        ();
     void _udpPortChanged            ();
+    void _audioChanged              ();
+    void _audioUdpPortChanged       ();
     void _rtspUrlChanged            ();
     void _tcpUrlChanged             ();
     void _lowLatencyModeChanged     ();

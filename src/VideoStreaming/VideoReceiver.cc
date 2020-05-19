@@ -62,6 +62,7 @@ VideoReceiver::VideoReceiver(QObject* parent)
     , _sink(nullptr)
     , _tee(nullptr)
     , _pipeline(nullptr)
+    , _audioPipeline(nullptr)
     , _videoSink(nullptr)
     , _lastFrameId(G_MAXUINT64)
     , _lastFrameTime(0)
@@ -72,6 +73,7 @@ VideoReceiver::VideoReceiver(QObject* parent)
     , _udpReconnect_us(5000000)
 #endif
     , _videoRunning(false)
+    , _audioRunning(false)
     , _showFullScreen(false)
     , _videoSettings(nullptr)
 {
@@ -93,9 +95,55 @@ VideoReceiver::~VideoReceiver()
 {
 #if defined(QGC_GST_STREAMING)
     stop();
+    stopAudio();
     setVideoSink(nullptr);
 #endif
 }
+
+#if defined(QGC_GST_STREAMING)
+void
+VideoReceiver::startAudio()
+{
+
+     QString audioUri = _audioUri;
+     if (audioUri.isEmpty())
+         return;
+
+    GError* error = nullptr;
+    QString pipeline = QStringLiteral("udpsrc uri=%1 caps=application/x-rtp ! rtpmp4adepay ! audio/mpeg,codec_data=(buffer)1290 ! queue ! decodebin ! audioconvert ! directsoundsink sync=false");
+
+    _audioPipeline = gst_parse_launch(static_cast<char*>(pipeline.arg(audioUri).toLocal8Bit().data()) , &error);
+
+    if(error != nullptr) {
+        qCWarning(VideoReceiverLog) << "Failed to create audio pipeline: " << error->message;
+        g_error_free(error);
+        return;
+    }
+
+    if (_audioPipeline) {
+        gst_element_set_state(_audioPipeline, GST_STATE_PLAYING);
+    } else {
+        qCWarning(VideoReceiverLog) << "Failed to create audio pipeline";
+    }
+
+    _audioRunning = true;
+    emit audioRunningChanged();
+}
+
+void
+VideoReceiver::stopAudio() {
+    qCDebug(VideoReceiverLog) << "Stopping audio pipeline";
+
+    if(_audioPipeline) {
+        gst_element_set_state(_audioPipeline, GST_STATE_NULL);
+        gst_object_unref(_audioPipeline);
+        _audioPipeline = nullptr;
+        _audioRunning = false;
+        emit audioRunningChanged();
+    }
+}
+#endif
+
 
 //-----------------------------------------------------------------------------
 void
@@ -550,6 +598,11 @@ VideoReceiver::start()
     }
 
 #if defined(QGC_GST_STREAMING)
+
+   // QString audioUri = _audioUri;
+  //  if (!audioUri.isEmpty())
+   //     _startAudio();
+
     _stop = false;
 
     QString uri = _uri;
@@ -711,6 +764,12 @@ VideoReceiver::stop()
         return;
     }
 #if defined(QGC_GST_STREAMING)
+
+    //_stopAudio();  //causes crash
+
+    //try to stop audio different way
+
+
     _stop = true;
     qCDebug(VideoReceiverLog) << "Stopping";
     if(!_streaming) {
@@ -730,6 +789,7 @@ VideoReceiver::stop()
             _handleEOS();
         }
         gst_message_unref(message);
+
     }
 #endif
 }
@@ -739,6 +799,12 @@ void
 VideoReceiver::setUri(const QString & uri)
 {
     _uri = uri;
+}
+
+void
+VideoReceiver::setAudioUri(const QString & uri)
+{
+    _audioUri = uri;
 }
 
 //-----------------------------------------------------------------------------

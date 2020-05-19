@@ -124,5 +124,20 @@
     "longDescription":  "If this option is enabled, the rtpjitterbuffer is removed and the video sink is set to assynchronous mode, reducing the latency by about 200 ms.",
     "type":             "bool",
     "defaultValue":     true
+},
+{
+    "name":             "audio",
+    "shortDescription": "Enables audio streaming",
+    "longDescription":  "If this option is enabled, audio streaming is enabled.",
+    "type":             "bool",
+    "defaultValue":     true
+},
+{
+    "name":             "audioUdpPort",
+    "shortDescription": "Audio UDP Port",
+    "longDescription":  "UDP port to bind to for audio stream.",
+    "type":             "uint16",
+    "min":              1025,
+    "defaultValue":     5601
 }
 ]

@@ -52,7 +52,8 @@ Rectangle {
     property bool   _isUDP265:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.udp265VideoSource
     property bool   _isRTSP:                    _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.rtspVideoSource
     property bool   _isTCP:                     _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.tcpVideoSource
-    property bool   _isMPEGTS:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.mpegtsVideoSource
+    property bool   _isMPEGTS:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.mpegtsVideoSource    
+    property bool   _isAudio:                   QGroundControl.settingsManager.videoSettings.audioEnabled
 
     property string gpsDisabled: "Disabled"
     property string gpsUdpPort:  "UDP Port"
@@ -1048,6 +1049,24 @@ Rectangle {
                                 text:                   ""
                                 fact:                   QGroundControl.settingsManager.videoSettings.lowLatencyMode
                                 visible:                _isGst && QGroundControl.settingsManager.videoSettings.lowLatencyMode.visible
+                            }
+                            QGCLabel {
+                                text:                   qsTr("Enable Audio Streaming")
+                                visible:                (_isMulticastUDP264 || _isUDP264) && QGroundControl.settingsManager.videoSettings.audio.visible
+                            }
+                            FactCheckBox {
+                                text:                   ""
+                                fact:                   QGroundControl.settingsManager.videoSettings.audio
+                                visible:                (_isMulticastUDP264 || _isUDP264) && QGroundControl.settingsManager.videoSettings.audio.visible
+                            }
+                            QGCLabel {
+                                text:                   qsTr("Audio Port")
+                                visible:                (_isMulticastUDP264 || _isUDP264) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.videoSettings.audioUdpPort
+                                visible:                (_isMulticastUDP264 || _isUDP264) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
                             }
                         }
                     }

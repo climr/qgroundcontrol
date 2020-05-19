@@ -34,9 +34,10 @@ class VideoReceiver : public QObject
 public:
 
 #if defined(QGC_GST_STREAMING)
-    Q_PROPERTY(bool             recording           READ    recording           NOTIFY recordingChanged)
+    Q_PROPERTY(bool             recording           READ    recording           NOTIFY recordingChanged)    
 #endif
     Q_PROPERTY(bool             videoRunning        READ    videoRunning        NOTIFY  videoRunningChanged)
+    Q_PROPERTY(bool             audioRunning        READ    audioRunning        NOTIFY  audioRunningChanged)
     Q_PROPERTY(QString          imageFile           READ    imageFile           NOTIFY  imageFileChanged)
     Q_PROPERTY(QString          videoFile           READ    videoFile           NOTIFY  videoFileChanged)
     Q_PROPERTY(bool             showFullScreen      READ    showFullScreen      WRITE   setShowFullScreen     NOTIFY showFullScreenChanged)
@@ -45,10 +46,11 @@ public:
     ~VideoReceiver();
 
 #if defined(QGC_GST_STREAMING)
-    virtual bool            recording       () { return _recording; }
+    virtual bool            recording       () { return _recording; }    
 #endif
 
     virtual bool            videoRunning    () { return _videoRunning; }
+    virtual bool            audioRunning    () { return _audioRunning; }
     virtual QString         imageFile       () { return _imageFile; }
     virtual QString         videoFile       () { return _videoFile; }
     virtual bool            showFullScreen  () { return _showFullScreen; }
@@ -63,6 +65,7 @@ public:
 
 signals:
     void videoRunningChanged                ();
+    void audioRunningChanged                ();
     void imageFileChanged                   ();
     void videoFileChanged                   ();
     void showFullScreenChanged              ();
@@ -72,14 +75,19 @@ signals:
     void msgEOSReceived                     ();
     void msgStateChangedReceived            ();
     void gotFirstRecordingKeyFrame          ();
+    void volumeChanged                      ();
 #endif
 
 public slots:
     virtual void start                      ();
     virtual void stop                       ();
     virtual void setUri                     (const QString& uri);
+    virtual void setAudioUri                (const QString& uri);
     virtual void stopRecording              ();
     virtual void startRecording             (const QString& videoFile = QString());
+    virtual void startAudio                 ();
+    virtual void stopAudio                  ();
+
 
 protected slots:
     virtual void _updateTimer               ();
@@ -114,6 +122,8 @@ protected:
     bool                _stop;
     Sink*               _sink;
     GstElement*         _tee;
+    uint16_t            _audioUdpPort;
+    float               _volume;
 
     void _noteVideoSinkFrame                            ();
 
@@ -125,12 +135,14 @@ protected:
     virtual void                _unlinkRecordingBranch  (GstPadProbeInfo* info);
     virtual void                _shutdownRecordingBranch();
     virtual void                _shutdownPipeline       ();
-    virtual void                _cleanupOldVideos       ();
+    virtual void                _cleanupOldVideos       ();  
 
     GstElement*     _pipeline;
     GstElement*     _videoSink;
     guint64         _lastFrameId;
     qint64          _lastFrameTime;
+    GstElement*     _audioPipeline;
+    GstElement*     _gstVolume;
 
     //-- Wait for Video Server to show up before starting
     QTimer          _frameTimer;
@@ -146,9 +158,11 @@ protected:
 #endif
 
     QString         _uri;
+    QString         _audioUri;
     QString         _imageFile;
     QString         _videoFile;
     bool            _videoRunning;
+    bool            _audioRunning;
     bool            _showFullScreen;
     VideoSettings*  _videoSettings;
 };

@@ -193,5 +193,6 @@
         <file alias="amarok_indoor_brand.png">src/ui/toolbar/Images/amarok_indoor_brand.png</file>
         <file alias="amarok_outdoor_brand.png">src/ui/toolbar/Images/amarok_outdoor_brand.png</file>
         <file alias="H31LogoFull.svg">resources/H31LogoFull.svg</file>
+        <file alias="SpeakerIcon.svg">src/ui/toolbar/Images/SpeakerIcon.svg</file>
     </qresource>
 </RCC>
