@@ -225,6 +225,8 @@ bool checkAndroidWritePermission() {
 
 int main(int argc, char *argv[])
 {
+
+
 #ifndef __mobile__
     RunGuard guard("QGroundControlRunGuardKey");
     if (!guard.tryToRun()) {

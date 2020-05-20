@@ -4124,7 +4124,7 @@ void Vehicle::setGimbalPanValue(float value)
                                            0);
 
         sendMessageOnLink(priorityLink(), msg);
-
+        qDebug() << "sending servo command";
         _headingWithGimbalOffset = (_headingFact.rawValue().toInt() - _gimbalDegrees) % 360;
         if (_headingWithGimbalOffset < 0)
             _headingWithGimbalOffset += 360;

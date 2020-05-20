@@ -27,15 +27,14 @@ ApplicationWindow {
     id:             mainWindow
     minimumWidth:   ScreenTools.isMobile ? Screen.width  : Math.min(ScreenTools.defaultFontPixelWidth * 100, Screen.width)
     minimumHeight:  ScreenTools.isMobile ? Screen.height : Math.min(ScreenTools.defaultFontPixelWidth * 50, Screen.height)
-    visible:        true
+    visible:        true    
 
     Component.onCompleted: {
         //-- Full screen on mobile or tiny screens
         if(ScreenTools.isMobile || Screen.height / ScreenTools.realPixelDensity < 120) {
-            mainWindow.showFullScreen()  //this caused some issues on the tablet, like couldn't enter text with windows keyboard.  probably fine with tablet mode?
-            //width = Screen.width;
-            //height = Screen.height;
-            //flags: Qt.FramelessWindowHint | Qt.Window
+            //mainWindow.showFullScreen()  //this caused some issues on the tablet, like couldn't enter text with windows keyboard.  probably fine with tablet mode?
+            width = Screen.width;
+            height = Screen.height;
         } else {
             width   = ScreenTools.isMobile ? Screen.width  : Math.min(250 * Screen.pixelDensity, Screen.width)
             height  = ScreenTools.isMobile ? Screen.height : Math.min(150 * Screen.pixelDensity, Screen.height)
