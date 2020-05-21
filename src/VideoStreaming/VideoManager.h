@@ -80,6 +80,7 @@ public:
     virtual void        setToolbox          (QGCToolbox *toolbox);
 
     virtual void toggleLocalVideoRecord();
+    virtual void toggleAudioPlayback();
     void _say                           (const QString& text);
     QString _vehicleIdSpeech            ();
 

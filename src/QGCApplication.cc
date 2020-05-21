@@ -251,7 +251,7 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
         setApplicationName(QString("%1_unittest").arg(QGC_APPLICATION_NAME));
     } else {
         //setApplicationName(QGC_APPLICATION_NAME);
-        setApplicationName("horizon31 GCS");  //for some reason it is not pulling in the application name from the .pro file
+        setApplicationName("Horizon31 GCS");  //for some reason it is not pulling in the application name from the .pro file
     }
     //setOrganizationName(QGC_ORG_NAME);
     setOrganizationName("horizon31");

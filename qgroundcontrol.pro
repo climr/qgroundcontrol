@@ -25,7 +25,7 @@ message(Qt version $$[QT_VERSION])
 
 include(QGCCommon.pri)
 
-TARGET   = QGroundControl
+TARGET   = Horizon31GCS
 TEMPLATE = app
 QGCROOT  = $$PWD
 
@@ -61,10 +61,10 @@ WindowsBuild {
 # Branding
 #
 
-QGC_APP_NAME        = "horizon31 GCS"
-QGC_ORG_NAME        = "horizon31.com"
+QGC_APP_NAME        = "Horizon31 GCS"
+QGC_ORG_NAME        = "Horizon31.com"
 QGC_ORG_DOMAIN      = "org.horizon31"
-QGC_APP_DESCRIPTION = "Open source ground control app by horizon31, LLC based on QGroundControl"
+QGC_APP_DESCRIPTION = "Open source ground control app by Horizon31, LLC based on QGroundControl"
 QGC_APP_COPYRIGHT   = "Copyright (C) 2020 horizon31, LLC. All rights reserved."
 
 WindowsBuild {

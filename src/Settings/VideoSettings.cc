@@ -70,7 +70,7 @@ void VideoSettings::_setDefaults()
     if (_noVideo) {
         _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoSourceNoVideo);
     } else {
-        _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoSourceUDPH264);
+        _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoSourceMulticastUDPH264);
     }
 }
 

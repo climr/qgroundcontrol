@@ -231,6 +231,7 @@ signals:
     void startVideoRecord           ();
     void stopVideoRecord            ();
     void toggleLocalVideoRecord     ();
+    void toggleAudioPlayback        ();
     void toggleVideoRecord          ();
     void gimbalPitchStep            (int direction);
     void gimbalYawStep              (int direction);
@@ -358,7 +359,8 @@ private:
     static const char* _buttonActionPreviousCamera;
     static const char* _buttonActionTriggerCamera;
     static const char* _buttonActionStartVideoRecord;
-    static const char* _buttonActionStopVideoRecord;
+    static const char* _buttonActionStopVideoRecord;    
+    static const char* _buttonActionToggleAudio;
     static const char* _buttonActionToggleVideoRecord;
     static const char* _buttonActionGimbalDown;
     static const char* _buttonActionGimbalUp;

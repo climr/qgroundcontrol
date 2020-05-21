@@ -60,6 +60,7 @@ const char* Joystick::_buttonActionPreviousCamera =     QT_TR_NOOP("Previous Cam
 const char* Joystick::_buttonActionTriggerCamera =      QT_TR_NOOP("Trigger Camera");
 const char* Joystick::_buttonActionStartVideoRecord =   QT_TR_NOOP("Start Recording Video");
 const char* Joystick::_buttonActionStopVideoRecord =    QT_TR_NOOP("Stop Recording Video");
+const char* Joystick::_buttonActionToggleAudio =        QT_TR_NOOP("Toggle Audio Playback");
 const char* Joystick::_buttonActionToggleVideoRecord =  QT_TR_NOOP("Toggle Recording Video");
 const char* Joystick::_buttonActionGimbalDown =         QT_TR_NOOP("Gimbal Down");
 const char* Joystick::_buttonActionGimbalUp =           QT_TR_NOOP("Gimbal Up");
@@ -242,7 +243,7 @@ void Joystick::_loadSettings()
     _circleCorrection = settings.value(_circleCorrectionSettingsKey, false).toBool();
     _gimbalEnabled  = settings.value(_gimbalSettingsKey, true).toBool();
 
-    _throttleMode   = static_cast<ThrottleMode_t>(settings.value(_throttleModeSettingsKey, ThrottleModeDownZero).toInt(&convertOk));
+    _throttleMode   = static_cast<ThrottleMode_t>(settings.value(_throttleModeSettingsKey, ThrottleModeCenterZero).toInt(&convertOk));
     badSettings |= !convertOk;
 
     qCDebug(JoystickLog) << "_loadSettings calibrated:txmode:throttlemode:exponential:deadband:badsettings" << _calibrated << _transmitterMode << _throttleMode << _exponential << _deadband << badSettings;
@@ -268,7 +269,7 @@ void Joystick::_loadSettings()
             calibration->max = 32767;
             badSettings |= !convertOk;
 
-            calibration->deadband = 500;
+            calibration->deadband = 800;
             badSettings |= !convertOk;
 
             calibration->reversed = false;
@@ -793,6 +794,8 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
             disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
+            disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleAudioPlayback);
+
         }
         // Always set up the new vehicle
         _activeVehicle = vehicle;
@@ -826,6 +829,7 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
             connect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             connect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
+            connect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleAudioPlayback);
 
 
 
@@ -863,6 +867,7 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::setLightMode,       _activeVehicle,  &Vehicle::setLight);
             disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
+            disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleAudioPlayback);
 
         }
         // FIXME: ****
@@ -1150,6 +1155,8 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if(action == _buttonActionToggleVideoRecord) {
          //if (buttonDown) emit toggleVideoRecord();
          if (buttonDown) emit toggleLocalVideoRecord();
+    } else if(action == _buttonActionToggleAudio) {
+         if (buttonDown) emit toggleAudioPlayback();
     } else if (action == _buttonActionLightsOff){
         if (buttonDown) emit setLightMode(0);
     } else if (action == _buttonActionLightsOnOvert){
@@ -1279,6 +1286,7 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStartVideoRecord));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStopVideoRecord));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleVideoRecord));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleAudio));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalDown,    true));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalUp,      true));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalLeft,    true));

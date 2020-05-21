@@ -239,7 +239,7 @@
     "shortDescription": "Enable Taisync Video Support",
     "longDescription":  "Enable Taisync Video Support",
     "type":             "bool",
-    "defaultValue":     true
+    "defaultValue":     false
 },
 {
     "name":             "enableMicrohard",

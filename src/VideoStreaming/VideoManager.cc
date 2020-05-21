@@ -61,6 +61,24 @@ void VideoManager::_say(const QString& text)
     _toolbox->audioOutput()->say(text.toLower());
 }
 
+
+void VideoManager::toggleAudioPlayback()
+{
+    qDebug() << "Got audio playback";
+    if (_videoReceiver->audioRunning())
+    {
+        qDebug() << "stop audio playback";
+        _videoReceiver->stopAudio();
+    }
+    else if (!_videoReceiver->audioRunning() && _videoReceiver->videoRunning())
+    {
+        qDebug() << "start audio playback";
+        _videoReceiver->startAudio();
+    }
+
+}
+
+
 void VideoManager::toggleLocalVideoRecord()
 {
     qDebug() << "Got video record";
