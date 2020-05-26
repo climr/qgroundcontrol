@@ -110,7 +110,7 @@ VideoReceiver::startAudio()
          return;
 
     GError* error = nullptr;
-    QString pipeline = QStringLiteral("udpsrc uri=%1 caps=application/x-rtp ! rtpmp4adepay ! audio/mpeg,codec_data=(buffer)1290 ! queue ! decodebin ! audioconvert ! directsoundsink sync=false");
+    QString pipeline = QStringLiteral("udpsrc uri=%1 caps=application/x-rtp ! rtpmp4adepay ! audio/mpeg,codec_data=(buffer)1208 ! queue ! decodebin ! audioconvert ! directsoundsink sync=false");
 
     _audioPipeline = gst_parse_launch(static_cast<char*>(pipeline.arg(audioUri).toLocal8Bit().data()) , &error);
 
