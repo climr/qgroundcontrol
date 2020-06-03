@@ -125,6 +125,8 @@ Item {
                 }
                 */
                 //center reticle grid for patrios
+                //no used for PTMaxx
+                /*
                 Rectangle {  //radius makes this a circle
                     color:  Qt.rgba(0,0,0,0)
                     border.color:   Qt.rgba(1,1,1,0.5)
@@ -138,6 +140,7 @@ Item {
                     visible:  _showGrid
 
                 }
+                */
                 Rectangle {  //red dot
                     color:  Qt.rgba(1,0,0,1)
                     border.color:   Qt.rgba(1,0,0,1)
@@ -169,13 +172,13 @@ Item {
                             if (activeVehicle)
                             {
                                 if(activeVehicle.currentCamera === 0) {
-                                    return "FRONT VIEW"
+                                    return "CAMERA 1"
                                 }
                                 else if(activeVehicle.currentCamera === 1) {
-                                    return "FRONT VIEW THERMAL"
+                                    return "CAMERA 2"
                                 }
                                 else
-                                    return "REAR VIEW"
+                                    return "CAMERA 3"
                             }
                                 return "Loading.."
                         }

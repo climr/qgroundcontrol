@@ -213,6 +213,7 @@ signals:
     void setWeaponsArmed            (bool value);
     void setWeaponFire              (bool value);
     void setSlowSpeedMode           (bool value);
+    void setToggleServo             (int value);
     void setGimbalPanValue          (float value);
 
 
@@ -377,6 +378,10 @@ private:
     static const char*  _buttonActionLightsOff;
     static const char*  _buttonActionLightsOnOvert;
     static const char*  _buttonActionLightsOnIR;
+    static const char* _buttonActionToggleServo5;
+    static const char* _buttonActionToggleServo6;
+    static const char* _buttonActionToggleServo7;
+    static const char* _buttonActionToggleServo8;
 
 
 private slots:

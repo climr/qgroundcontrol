@@ -61,6 +61,10 @@ Item {
     property bool   _recordingVideo:                _videoReceiver && _videoReceiver.recording
     property bool   _videoRunning:                  _videoReceiver && _videoReceiver.videoRunning
     property bool   _audioRunning:                  _videoReceiver && _videoReceiver.audioRunning
+    property bool   _servo5State:                   activeVehicle ? activeVehicle.servo5 : false
+    property bool   _servo6State:                   activeVehicle ? activeVehicle.servo6 : false
+    property bool   _servo7State:                   activeVehicle ? activeVehicle.servo7 : false
+    property bool   _servo8State:                   activeVehicle ? activeVehicle.servo8 : false
     property bool   _streamingEnabled:              QGroundControl.settingsManager.videoSettings.streamConfigured
     property bool   _audioEnabled:                  QGroundControl.settingsManager.videoSettings.audioEnabled
 
@@ -548,60 +552,8 @@ Item {
             guidedActionsController:    _guidedController
         }
 
-        //Nightcrawler/Patrios video recording Button
-        // Button to start/stop video recording
-        /*
-        Item {
-            anchors.right:              parent.right
-            anchors.bottom:             patriosBox.top
-            anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
-            anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
-            anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
-            height:                     ScreenTools.defaultFontPixelHeight * 2
-            width:                      height
-            z:                          _mapAndVideo.z + 5
-            visible:            true //QGroundControl.videoManager.isGStreamer
-            Rectangle {
-                id:                 recordBtnBackground
-                anchors.top:        parent.top
-                anchors.bottom:     parent.bottom
-                width:              height
-                radius:             _recordingVideo ? 0 : height
-                color:              (_videoRunning && _streamingEnabled) ? "red" : "gray"
-                SequentialAnimation on opacity {
-                    running:        _recordingVideo
-                    loops:          Animation.Infinite
-                    PropertyAnimation { to: 0.5; duration: 500 }
-                    PropertyAnimation { to: 1.0; duration: 500 }
-                }
-            }
-            QGCColoredImage {
-                anchors.top:                parent.top
-                anchors.bottom:             parent.bottom
-                anchors.horizontalCenter:   parent.horizontalCenter
-                width:                      height * 0.625
-                sourceSize.width:           width
-                source:                     "/qmlimages/CameraIcon.svg"
-                visible:                    recordBtnBackground.visible
-                fillMode:                   Image.PreserveAspectFit
-                color:                      "white"
-            }
-            MouseArea {
-                anchors.fill:   parent
-                enabled:        _videoRunning && _streamingEnabled
-                onClicked: {
-                    if (_recordingVideo) {
-                        _videoReceiver.stopRecording()
-                        // reset blinking animation
-                        recordBtnBackground.opacity = 1
-                    } else {
-                        _videoReceiver.startRecording(videoFileName.text)
-                    }
-                }
-            }
-        }
-        */
-        //Nightcrawler/Patrios specific feedback panel
+
+        //PTMaxx specific feedback panel
 
 
 
@@ -640,6 +592,39 @@ Item {
                     columnSpacing:      ScreenTools.defaultFontPixelWidth
                     columns:            2
                     anchors.horizontalCenter: parent.horizontalCenter
+
+                    QGCLabel {
+                        text: qsTr("Active Camera:")
+                        color: "white"
+                        MouseArea {
+                            anchors.fill:   parent
+                            enabled:        _streamingEnabled
+                            onClicked: {
+                                   activeVehicle.gotoNextCamera()
+                            }
+                        }
+                    }
+
+                    QGCLabel {
+                        text: getCamName()
+                        color: "white"
+                        function getCamName() {
+                            if (activeVehicle)
+                            {
+                                //if (!_videoRunning)
+                                //    return qsTr("No Stream")
+                                if(activeVehicle.currentCamera === 0)
+                                    return qsTr("1 (5600)")
+                                else if (activeVehicle.currentCamera === 1)
+                                    return qsTr("2 (5601)")
+                                else
+                                    return qsTr("3 (5602)")
+                                }
+                            return qsTr("Loading..")
+                            }
+
+
+                    }
 
                     QGCLabel {
                         text: qsTr("Audio Enable:")
@@ -749,30 +734,232 @@ Item {
                             }
                         }
                     }                   
+
                     QGCLabel {
-                        text: qsTr("Active Camera:")
-                        color: "white"                    
-                    }
-                    QGCLabel {
-                        text: getCamName()
+                        text: qsTr("Servo 5:")
                         color: "white"
-                        function getCamName() {
-                            if (activeVehicle)
-                            {
-                                if (!_videoRunning)
-                                    return qsTr("No Stream")
-                                if(activeVehicle.currentCamera === 0)
-                                    return qsTr("Front")
-                                else if (activeVehicle.currentCamera === 1)
-                                    return qsTr("Thermal")
-                                else
-                                    return qsTr("Rear")
-                                }
-                            return qsTr("Loading..")
-                            }
-
-
+                        visible:  activeVehicle ? true : false
                     }
+                    Item {
+                       // anchors.right:              parent.right
+                       // anchors.bottom:             patriosBox.top
+                      //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+                      //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
+                      //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        width:                      height
+                        z:                          _mapAndVideo.z + 5
+                        visible:                    activeVehicle ? true : false
+                        Rectangle {
+                            id:                 servo5BtnBackground
+                            anchors.top:        parent.top
+                            anchors.bottom:     parent.bottom
+                            width:              height
+                            radius:             height //_recordingVideo ? 0 : height
+                            color:              (_servo5State) ? "red" : "gray"
+                            SequentialAnimation on opacity {
+                                running:        _servo5State
+                                loops:          Animation.Infinite
+                                PropertyAnimation { to: 0.5; duration: 500 }
+                                PropertyAnimation { to: 1.0; duration: 500 }
+                            }
+                        }
+                        QGCColoredImage {
+                            anchors.top:                parent.top
+                            anchors.bottom:             parent.bottom
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            width:                      height * 0.625
+                            sourceSize.width:           width
+                            source:                     "/qmlimages/ServoIcon.svg"
+                            visible:                    servo5BtnBackground.visible
+                            fillMode:                   Image.PreserveAspectFit
+                            color:                      "white"
+                        }
+                        MouseArea {
+                            anchors.fill:   parent
+                            enabled:        activeVehicle ? true : false
+                            onClicked: {
+                                if (_servo5State) {
+                                    //turn off servo5
+                                    activeVehicle.setServoValue(5, 900);
+                                    // reset blinking animation
+                                    audioBtnBackground.opacity = 1
+                                } else {
+                                    //turn on servo
+                                    activeVehicle.setServoValue(5, 2000);
+                                }
+                            }
+                        }
+                    }
+                    QGCLabel {
+                        text: qsTr("Servo 6:")
+                        color: "white"
+                        visible:  activeVehicle ? true : false
+                    }
+                    Item {
+                       // anchors.right:              parent.right
+                       // anchors.bottom:             patriosBox.top
+                      //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+                      //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
+                      //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        width:                      height
+                        z:                          _mapAndVideo.z + 5
+                        visible:                    activeVehicle ? true : false
+                        Rectangle {
+                            id:                 servo6BtnBackground
+                            anchors.top:        parent.top
+                            anchors.bottom:     parent.bottom
+                            width:              height
+                            radius:             height //_recordingVideo ? 0 : height
+                            color:              (_servo6State) ? "red" : "gray"
+                            SequentialAnimation on opacity {
+                                running:        _servo6State
+                                loops:          Animation.Infinite
+                                PropertyAnimation { to: 0.5; duration: 500 }
+                                PropertyAnimation { to: 1.0; duration: 500 }
+                            }
+                        }
+                        QGCColoredImage {
+                            anchors.top:                parent.top
+                            anchors.bottom:             parent.bottom
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            width:                      height * 0.625
+                            sourceSize.width:           width
+                            source:                     "/qmlimages/ServoIcon.svg"
+                            visible:                    servo6BtnBackground.visible
+                            fillMode:                   Image.PreserveAspectFit
+                            color:                      "white"
+                        }
+                        MouseArea {
+                            anchors.fill:   parent
+                            enabled:        activeVehicle ? true : false
+                            onClicked: {
+                                if (_servo6State) {
+                                    //turn off servo5
+                                    activeVehicle.setServoValue(6, 900);
+                                    // reset blinking animation
+                                    audioBtnBackground.opacity = 1
+                                } else {
+                                    //turn on servo
+                                    activeVehicle.setServoValue(6, 2000);
+                                }
+                            }
+                        }
+                    }
+                    QGCLabel {
+                        text: qsTr("Servo 7:")
+                        color: "white"
+                        visible:  activeVehicle ? true : false
+                    }
+                    Item {
+                       // anchors.right:              parent.right
+                       // anchors.bottom:             patriosBox.top
+                      //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+                      //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
+                      //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        width:                      height
+                        z:                          _mapAndVideo.z + 5
+                        visible:                    activeVehicle ? true : false
+                        Rectangle {
+                            id:                 servo7BtnBackground
+                            anchors.top:        parent.top
+                            anchors.bottom:     parent.bottom
+                            width:              height
+                            radius:             height //_recordingVideo ? 0 : height
+                            color:              (_servo7State) ? "red" : "gray"
+                            SequentialAnimation on opacity {
+                                running:        _servo7State
+                                loops:          Animation.Infinite
+                                PropertyAnimation { to: 0.5; duration: 500 }
+                                PropertyAnimation { to: 1.0; duration: 500 }
+                            }
+                        }
+                        QGCColoredImage {
+                            anchors.top:                parent.top
+                            anchors.bottom:             parent.bottom
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            width:                      height * 0.625
+                            sourceSize.width:           width
+                            source:                     "/qmlimages/ServoIcon.svg"
+                            visible:                    servo7BtnBackground.visible
+                            fillMode:                   Image.PreserveAspectFit
+                            color:                      "white"
+                        }
+                        MouseArea {
+                            anchors.fill:   parent
+                            enabled:        activeVehicle ? true : false
+                            onClicked: {
+                                if (_servo7State) {
+                                    //turn off servo7
+                                    activeVehicle.setServoValue(7, 900);
+                                    // reset blinking animation
+                                    audioBtnBackground.opacity = 1
+                                } else {
+                                    //turn on servo
+                                    activeVehicle.setServoValue(7, 2000);
+                                }
+                            }
+                        }
+                    }
+                    QGCLabel {
+                        text: qsTr("Servo 8:")
+                        color: "white"
+                        visible:  activeVehicle ? true : false
+                    }
+                    Item {
+                       // anchors.right:              parent.right
+                       // anchors.bottom:             patriosBox.top
+                      //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+                      //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
+                      //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        width:                      height
+                        z:                          _mapAndVideo.z + 5
+                        visible:                    activeVehicle ? true : false
+                        Rectangle {
+                            id:                 servo8BtnBackground
+                            anchors.top:        parent.top
+                            anchors.bottom:     parent.bottom
+                            width:              height
+                            radius:             height //_recordingVideo ? 0 : height
+                            color:              (_servo8State) ? "red" : "gray"
+                            SequentialAnimation on opacity {
+                                running:        _servo8State
+                                loops:          Animation.Infinite
+                                PropertyAnimation { to: 0.5; duration: 500 }
+                                PropertyAnimation { to: 1.0; duration: 500 }
+                            }
+                        }
+                        QGCColoredImage {
+                            anchors.top:                parent.top
+                            anchors.bottom:             parent.bottom
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            width:                      height * 0.625
+                            sourceSize.width:           width
+                            source:                     "/qmlimages/ServoIcon.svg"
+                            visible:                    servo8BtnBackground.visible
+                            fillMode:                   Image.PreserveAspectFit
+                            color:                      "white"
+                        }
+                        MouseArea {
+                            anchors.fill:   parent
+                            enabled:        activeVehicle ? true : false
+                            onClicked: {
+                                if (_servo8State) {
+                                    //turn off servo8
+                                    activeVehicle.setServoValue(8, 900);
+                                    // reset blinking animation
+                                    audioBtnBackground.opacity = 1
+                                } else {
+                                    //turn on servo
+                                    activeVehicle.setServoValue(8, 2000);
+                                }
+                            }
+                        }
+                    }
+                    /*
                     QGCLabel {
                         text: qsTr("Lights:")
                         color: "white"
@@ -831,6 +1018,7 @@ Item {
                             return  qsTr("Loading..")
                         }
                     }
+                    */
                 }
             }
         }

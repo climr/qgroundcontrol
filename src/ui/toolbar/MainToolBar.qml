@@ -83,7 +83,7 @@ Item {
                 QGCToolBarButton {
                     id:                 settingsButton
                     Layout.fillHeight:  true
-                    icon.source:        "/qmlimages/H31LogoWhite.svg"
+                    icon.source:        "/qmlimages/QGCLogoWhite.svg"
                     logo:               true
                     visible:            !QGroundControl.corePlugin.options.combineSettingsAndSetup
                     onClicked: {
@@ -225,7 +225,7 @@ Item {
         anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
         visible:                activeVehicle && !communicationLost && x > (toolbarRow.x + toolbarRow.width + ScreenTools.defaultFontPixelWidth)
         fillMode:               Image.PreserveAspectFit
-        source:                 _outdoorPalette ? "/qmlimages/amarok_outdoor_brand.png" : "/qmlimages/amarok_indoor_brand.png"  //_brandImageOutdoor : _brandImageIndoor
+        source:                 _outdoorPalette ? "/qmlimages/PTXmaxx_outdoor_brand.png" : "/qmlimages/PTXmaxx_indoor_brand.png"  //_brandImageOutdoor : _brandImageIndoor
         mipmap:                 true
 
         property bool   _outdoorPalette:        qgcPal.globalTheme === QGCPalette.Light

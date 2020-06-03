@@ -164,6 +164,7 @@ Vehicle::Vehicle(LinkInterface*             link,
 #if defined(QGC_AIRMAP_ENABLED)
     , _airspaceVehicleManager(nullptr)
 #endif
+    , _servo5_state(false)
     , _armed(false)
     , _base_mode(0)
     , _custom_mode(0)
@@ -221,6 +222,8 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _clockFactGroup(this)
     , _distanceSensorFactGroup(this)
     , _estimatorStatusFactGroup(this)
+
+
 {
     connect(_joystickManager, &JoystickManager::activeJoystickChanged, this, &Vehicle::_loadSettings);
     connect(qgcApp()->toolbox()->multiVehicleManager(), &MultiVehicleManager::activeVehicleAvailableChanged, this, &Vehicle::_loadSettings);
@@ -739,6 +742,9 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         break;
     case MAVLINK_MSG_ID_RC_CHANNELS:
         _handleRCChannels(message);
+        break;
+    case MAVLINK_MSG_ID_SERVO_OUTPUT_RAW:
+        _handleServoOutput(message);
         break;
     case MAVLINK_MSG_ID_RC_CHANNELS_RAW:
         _handleRCChannelsRaw(message);
@@ -1653,6 +1659,7 @@ void Vehicle::_handleSysStatus(mavlink_message_t& message)
                          sysStatus.battery_remaining == -1 ? qQNaN() : sysStatus.battery_remaining);
 }
 
+
 void Vehicle::_handleBatteryStatus(mavlink_message_t& message)
 {
     mavlink_battery_status_t bat_status;
@@ -1857,11 +1864,95 @@ void Vehicle::_handleRadioStatus(mavlink_message_t& message)
     }
 }
 
+
+void Vehicle::_handleServoOutput(mavlink_message_t& message)
+{
+    float midPoint = 1500;
+    float deadZone = 0.05;
+    mavlink_servo_output_raw_t servo_raw;
+
+    mavlink_msg_servo_output_raw_decode(&message, &servo_raw);
+
+    uint16_t* _rgServovalues[cMaxServoChannels] = {
+        &servo_raw.servo1_raw,
+        &servo_raw.servo2_raw,
+        &servo_raw.servo3_raw,
+        &servo_raw.servo4_raw,
+        &servo_raw.servo5_raw,
+        &servo_raw.servo6_raw,
+        &servo_raw.servo7_raw,
+        &servo_raw.servo8_raw,
+        &servo_raw.servo9_raw,
+        &servo_raw.servo10_raw,
+        &servo_raw.servo11_raw,
+        &servo_raw.servo12_raw,
+        &servo_raw.servo13_raw,
+        &servo_raw.servo14_raw,
+        &servo_raw.servo15_raw,
+        &servo_raw.servo16_raw,
+    };
+    uint16_t servoValues[cMaxServoChannels];
+
+    for (int i=0; i<cMaxServoChannels; i++) {
+        servoValues[i] = *_rgServovalues[i];
+    }
+
+    if ((servoValues[4]) > (uint16_t)(midPoint * (1.0f + deadZone)) && (_servo5_state == false)) {
+        qDebug() << "setting servo 5 to on";
+        _servo5_state = true;
+        emit servo5Changed(_servo5_state);
+    }
+    else if ((servoValues[4]) < (uint16_t)(midPoint * (1.0f - deadZone)) && (_servo5_state == true))
+    {
+        qDebug() << "setting servo 5 to off";
+        _servo5_state = false;
+        emit servo5Changed(_servo5_state);
+    }
+
+    if ((servoValues[5]) > (uint16_t)(midPoint * (1.0f + deadZone)) && (_servo6_state == false)) {
+        qDebug() << "setting servo 6 to on";
+        _servo6_state = true;
+        emit servo6Changed(_servo6_state);
+    }
+    else if ((servoValues[5]) < (uint16_t)(midPoint * (1.0f - deadZone)) && (_servo6_state == true))
+    {
+        qDebug() << "setting servo 6 to off";
+        _servo6_state = false;
+        emit servo6Changed(_servo6_state);
+    }
+
+    if ((servoValues[6]) > (uint16_t)(midPoint * (1.0f + deadZone)) && (_servo7_state == false)) {
+        qDebug() << "setting servo 7 to on";
+        _servo7_state = true;
+        emit servo7Changed(_servo7_state);
+    }
+    else if ((servoValues[6]) < (uint16_t)(midPoint * (1.0f - deadZone)) && (_servo7_state == true))
+    {
+        qDebug() << "setting servo 7 to off";
+        _servo7_state = false;
+        emit servo7Changed(_servo7_state);
+    }
+
+    if ((servoValues[7]) > (uint16_t)(midPoint * (1.0f + deadZone)) && (_servo8_state == false)) {
+        qDebug() << "setting servo 8 to on";
+        _servo8_state = true;
+        emit servo8Changed(_servo8_state);
+    }
+    else if ((servoValues[7]) < (uint16_t)(midPoint * (1.0f - deadZone)) && (_servo8_state == true))
+    {
+        qDebug() << "setting servo 8 to off";
+        _servo8_state = false;
+        emit servo8Changed(_servo8_state);
+    }
+
+    //qDebug() << "----------got servo channel 5 = " << servoValues[4] << "servo state" << _servo5_state;
+}
 void Vehicle::_handleRCChannels(mavlink_message_t& message)
 {
     mavlink_rc_channels_t channels;
 
     mavlink_msg_rc_channels_decode(&message, &channels);
+
 
     uint16_t* _rgChannelvalues[cMaxRcChannels] = {
         &channels.chan1_raw,
@@ -1895,6 +1986,7 @@ void Vehicle::_handleRCChannels(mavlink_message_t& message)
         }
     }
 
+    //qDebug() << "got rc channel 2 = " << pwmValues[2];
     emit remoteControlRSSIChanged(channels.rssi);
     emit rcChannelsChanged(channels.chancount, pwmValues);
 }
@@ -1938,7 +2030,7 @@ void Vehicle::_handleRCChannelsRaw(mavlink_message_t& message)
     }
     for (int i=9; i<18; i++) {
         pwmValues[i] = -1;
-    }
+    }    
 
     emit remoteControlRSSIChanged(channels.rssi);
     emit rcChannelsChanged(channelCount, pwmValues);
@@ -2648,9 +2740,18 @@ void Vehicle::_updateFlightTime()
 void Vehicle::_setVehicleUI()  //after params loaded, this method sets the UI initial settings to match what the vehicle is set to. This is needed for settings which are based on parameters
 {
     //figure out if we are in low speed or high speed and set UI
+    //not applicable for PTMaxx
 
     qDebug() << "setting up vehicle UI";
 
+    //reset video to 5600 at startup
+    emit currentCameraChanged(1);
+     _toolbox->settingsManager()->videoSettings()->udpPort()->setRawValue(5600);
+
+
+
+
+/*
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_MODE")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_MODE");
         int speed_mode = (int)fact->rawValue().toInt();
@@ -2671,7 +2772,9 @@ void Vehicle::_setVehicleUI()  //after params loaded, this method sets the UI in
         }
 
     }
+    */
 
+    /*
     //if servo2_function is 0, then we are in 2W
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_FUNCTION")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_FUNCTION");
@@ -2691,6 +2794,7 @@ void Vehicle::_setVehicleUI()  //after params loaded, this method sets the UI in
         }
 
     }
+    */
 }
 
 void Vehicle::_startPlanRequest()
@@ -4054,8 +4158,32 @@ void Vehicle::set4WSteeringMode(bool value)
     emit steeringModeChanged(_fourwheelsteering);
 }
 
+void Vehicle::setServoValue(int servo, int value)
+{
+    mavlink_message_t msg;
+    mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                       _mavlink->getComponentId(),
+                                       priorityLink()->mavlinkChannel(),
+                                       &msg,
+                                       _id,
+                                       defaultComponentId(),   // target component
+                                       MAV_CMD_DO_SET_SERVO,    // command id
+                                       0, //first transmission
+                                       servo,
+                                       value,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                       0);
+
+    sendMessageOnLink(priorityLink(), msg);
+    qDebug() << "sending servo command";
+}
+
 void Vehicle::setGimbalPanValue(float value)
 {
+    /*  not used for ptmaxx
     //set servo and set vehicle gimble pan value in degrees
     int midpoint = 1500;
     int upperPoint = 2200;
@@ -4142,6 +4270,8 @@ void Vehicle::setGimbalPanValue(float value)
         _centeredGimbal = false;
     else
         if (_centeredGimbal == false) _centeredGimbal = true;
+
+        */
 }
 
 void Vehicle::setLight(int c)
@@ -4272,11 +4402,98 @@ void Vehicle::_setCameraPosition(int c)
                    0,
                    0);
 }
+void Vehicle::setToggleServo(int value)
+{
+    //servo value provided, if current known value is less than 1500, set high, otherwise set low
+    if (value == 5)
+    {
+        if (_servo5_state)
+        {
+            setServoValue(5, 900);
+            _servo5_state = false;
+             emit servo5Changed(_servo5_state);
+        }
+        else
+        {
+            setServoValue(5, 2000);
+            _servo5_state = true;
+             emit servo5Changed(_servo5_state);
+        }
+    }
+    else if (value == 6)
+    {
+        if (_servo6_state)
+        {
+            setServoValue(6, 900);
+            _servo6_state = false;
+             emit servo6Changed(_servo6_state);
+        }
+        else
+        {
+            setServoValue(6, 2000);
+            _servo6_state = true;
+             emit servo6Changed(_servo6_state);
+        }
+    }
+    if (value == 7)
+    {
+        if (_servo7_state)
+        {
+            setServoValue(7, 900);
+            _servo7_state = false;
+             emit servo7Changed(_servo7_state);
+        }
+        else
+        {
+            setServoValue(7, 2000);
+            _servo7_state = true;
+             emit servo7Changed(_servo7_state);
+        }
+    }
+    if (value == 8)
+    {
+        if (_servo8_state)
+        {
+            setServoValue(8, 900);
+            _servo8_state = false;
+             emit servo8Changed(_servo8_state);
+        }
+        else
+        {
+            setServoValue(8, 2000);
+            _servo8_state = true;
+             emit servo8Changed(_servo8_state);
+        }
+    }
+}
 void Vehicle::gotoNextCamera()
 {
     int c = _currentCamera + 1;
     if(c >= 3) c = 0;
     _currentCamera = c;
+    emit currentCameraChanged(c);
+    //instead of sending a mav command, for PTMaxx we want to cycle through video ports 5600, 5601, 5602
+    if (c==0)
+    {
+        //switch cam to port 5600        
+        _toolbox->settingsManager()->videoSettings()->udpPort()->setRawValue(5600);
+
+    }
+    else if (c==1)
+    {
+        //switch cam to port 5601
+         _toolbox->settingsManager()->videoSettings()->udpPort()->setRawValue(5601);
+    }
+    else
+    {
+        //switch cam to port 5602
+         _toolbox->settingsManager()->videoSettings()->udpPort()->setRawValue(5602);
+
+    }
+
+
+    //below not used for PTMaxx
+    /*
     MAV_COMPONENT cam;
     if (c==0) cam = MAV_COMP_ID_CAMERA;
     else if (c==1)  cam = MAV_COMP_ID_CAMERA2;
@@ -4295,6 +4512,8 @@ void Vehicle::gotoNextCamera()
                    0,
                    0,
                    0);
+
+                   */
 }
 void Vehicle::setSlowSpeedMode(bool value)
 {
@@ -4853,6 +5072,7 @@ void Vehicle::updateFlightDistance(double distance)
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+
 
 const char* VehicleBatteryFactGroup::_voltageFactName =                     "voltage";
 const char* VehicleBatteryFactGroup::_percentRemainingFactName =            "percentRemaining";

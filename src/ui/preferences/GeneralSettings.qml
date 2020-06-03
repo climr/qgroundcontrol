@@ -991,9 +991,18 @@ Rectangle {
                                 Layout.maximumWidth:  videoSource.width * 1.5
                                 Layout.columnSpan: 2
                             }
+                            QGCLabel {
+                                text:       qsTr("Ports 5600, 5601 and 5602 and reserved in this build for three video streams.")
+                                wrapMode:   Text.WordWrap
+                                font.pointSize:       ScreenTools.smallFontPointSize
+                                visible: _isMulticastUDP264 | _isUDP264
+                                Layout.maximumWidth:  videoSource.width * 1.5
+                                Layout.columnSpan: 2
+                            }
 
                             QGCLabel {
                                 text:                   qsTr("UDP Port")
+                                enabled:                false
                                 visible:                (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP264)  && QGroundControl.settingsManager.videoSettings.udpPort.visible
                             }
                             FactTextField {
@@ -1058,7 +1067,7 @@ Rectangle {
                                 text:                   ""
                                 fact:                   QGroundControl.settingsManager.videoSettings.audio
                                 visible:                (_isMulticastUDP264 || _isUDP264) && QGroundControl.settingsManager.videoSettings.audio.visible
-                            }
+                            }                            
                             QGCLabel {
                                 text:                   qsTr("Audio Port")
                                 visible:                (_isMulticastUDP264 || _isUDP264) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible

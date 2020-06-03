@@ -287,6 +287,8 @@ Rectangle {
                 }
             }
 
+            /*
+
             SubMenuButton {
                 setupIndicator:     false
                 exclusiveGroup:     setupButtonGroup
@@ -297,6 +299,7 @@ Rectangle {
                 Layout.fillWidth:   true
                 onClicked:          showPanel(this, "AmarokConfig.qml")
             }
+            */
 
             SubMenuButton {
                 setupIndicator:     false

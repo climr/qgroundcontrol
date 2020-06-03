@@ -247,6 +247,7 @@ private:
     Fact        _lockFact;
 };
 
+
 class VehicleBatteryFactGroup : public FactGroup
 {
     Q_OBJECT
@@ -534,6 +535,10 @@ public:
     };
     Q_ENUM(CheckList)
 
+    Q_PROPERTY(bool                 servo5                  READ servo5                                                 NOTIFY servo5Changed)
+    Q_PROPERTY(bool                 servo6                  READ servo6                                                 NOTIFY servo6Changed)
+    Q_PROPERTY(bool                 servo7                  READ servo7                                                 NOTIFY servo7Changed)
+    Q_PROPERTY(bool                 servo8                  READ servo8                                                 NOTIFY servo8Changed)
     Q_PROPERTY(int                  gimbalRate              READ gimbalRate                                            CONSTANT)
     Q_PROPERTY(bool                 weaponsPreArmed         READ weaponsPreArmed                                        NOTIFY weaponsPreArmedChanged)
     Q_PROPERTY(bool                 weaponsArmed            READ weaponsArmed                                           NOTIFY weaponsArmedChanged)
@@ -831,7 +836,9 @@ public:
     void setSlowSpeedMode(bool value);
     void setLight(int value);
     void setGimbalPanValue(float value);
-    void gotoNextCamera();
+    Q_INVOKABLE void setServoValue(int servo, int value);
+    Q_INVOKABLE void gotoNextCamera();
+    void setToggleServo(int value);
     int joystickMode();
     void setJoystickMode(int mode);
 
@@ -917,6 +924,10 @@ public:
 
     QGeoCoordinate homePosition();
 
+    bool servo5     () { return _servo5_state;}
+    bool servo6     () { return _servo6_state;}
+    bool servo7     () { return _servo7_state;}
+    bool servo8     () { return _servo8_state;}
     bool armed      () { return _armed; }
     bool weaponsArmed      () { return _weaponsArmed; }
     bool weaponsPreArmed    () { return _weaponsPreArmed; }
@@ -1077,6 +1088,7 @@ public:
     VehicleObjectAvoidance* objectAvoidance()  { return _objectAvoidance; }
 
     static const int cMaxRcChannels = 18;    
+    static const int cMaxServoChannels = 16;
 
     bool containsLink(LinkInterface* link) { return _links.contains(link); }
 
@@ -1254,6 +1266,10 @@ signals:
     void longitudeChanged               ();
     void currentConfigChanged           ();
     void flowImageIndexChanged          ();
+    void servo5Changed                  (bool value);
+    void servo6Changed                  (bool value);
+    void servo7Changed                  (bool value);
+    void servo8Changed                  (bool value);
     void rcRSSIChanged                  (int rcRSSI);
     void weaponsArmedChanged            (bool value);
     void weaponsPreArmedChanged         (bool value);
@@ -1371,6 +1387,7 @@ private:
     void _handleHeartbeat               (mavlink_message_t& message);
     void _handleRadioStatus             (mavlink_message_t& message);
     void _handleRCChannels              (mavlink_message_t& message);
+    void _handleServoOutput             (mavlink_message_t& message);
     void _handleRCChannelsRaw           (mavlink_message_t& message);
     void _handleBatteryStatus           (mavlink_message_t& message);
     void _handleSysStatus               (mavlink_message_t& message);
@@ -1552,6 +1569,10 @@ private:
     AirspaceVehicleManager* _airspaceVehicleManager;
 #endif
 
+    bool    _servo5_state = false;
+    bool    _servo6_state  = false;
+    bool    _servo7_state = false;
+    bool    _servo8_state = false;
     bool    _armed;         ///< true: vehicle is armed
     bool    _weaponsArmed = false;  ///true: weapon system is armed
     bool    _weaponsPreArmed = false;  ///true: weapon system is pre armed

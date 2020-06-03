@@ -77,6 +77,10 @@ const char* Joystick::_buttonActionArmWeapons =         QT_TR_NOOP("Step 1 Weapo
 const char* Joystick::_buttonActionFireWeapon =         QT_TR_NOOP("Step 2 Weapon Fire");
 const char* Joystick::_buttonActionSlowSpeedMode =         QT_TR_NOOP("Slow Speed Mode");
 const char* Joystick::_buttonActionHighSpeedMode =         QT_TR_NOOP("High Speed Mode");
+const char* Joystick::_buttonActionToggleServo5 =         QT_TR_NOOP("Toggle Servo 5");
+const char* Joystick::_buttonActionToggleServo6 =         QT_TR_NOOP("Toggle Servo 6");
+const char* Joystick::_buttonActionToggleServo7 =         QT_TR_NOOP("Toggle Servo 7");
+const char* Joystick::_buttonActionToggleServo8 =         QT_TR_NOOP("Toggle Servo 8");
 
 
 const char* Joystick::_rgFunctionSettingsKey[Joystick::maxFunction] = {
@@ -257,8 +261,10 @@ void Joystick::_loadSettings()
     for (int axis = 0; axis < _axisCount; axis++) {
         Calibration_t* calibration = &_rgCalibration[axis];
 
+
         if (axis == 5)
         {
+            /* not needed for PTMaxx
             //hard code calibraiton for axis 5 because this is not yet done in QCC as of 4.0.6
             calibration->center = 0;
             badSettings |= !convertOk;
@@ -273,6 +279,7 @@ void Joystick::_loadSettings()
             badSettings |= !convertOk;
 
             calibration->reversed = false;
+            */
         }
         else
         {
@@ -626,6 +633,10 @@ void Joystick::_handleAxis()
             }
 
             if(_axisCount > 5) {
+
+                // not needed for PTMaxx
+
+                /*
                 //the UAV Components controller does not identify as a known game controller, so the _rgFunctionAxis map is never initialized. In this case we know
                 //the gimbal yaw axis is 5, so hard coding.
                 //axis = _rgFunctionAxis[gimbalYawFunction];
@@ -672,6 +683,7 @@ void Joystick::_handleAxis()
                 gimbalYaw = gimbalYaw_accu;
 
                 //qDebug() << "gimbal gimbalYaw value:" << gimbalYaw;
+                */
             }
 
             if (_accumulator) {
@@ -726,46 +738,9 @@ void Joystick::_handleAxis()
             emit manualControl(roll, -pitch, yaw, throttle, shortButtons, _activeVehicle->joystickMode());
             if(_activeVehicle && _axisCount > 4 && _gimbalEnabled) {
                 //-- TODO: There is nothing consuming this as there are no messages to handle gimbal
-                //   the way MANUAL_CONTROL handles the other channels.
-                //emit manualControlGimbal((gimbalPitch + 1.0f) / 2.0f * 90.0f, gimbalYaw * 180.0f);
-
-                emit setGimbalPanValue(gimbalYaw);
-              /*  int upperServo = 2100;
-                int lowerServo = 900;
-                int centerServo = 1500;
-                if (gimbalYaw < 0)
-                {
-                    int servoValue = (int)((centerServo - lowerServo) * gimbalYaw) + centerServo;
-                    //qDebug() << "gimbal servo value:" << servoValue;
-                    emit setGimbalPanValue(servoValue);
-                    //emit setDoSetServo(5, servoValue);
-                }
-                else
-                {
-                    int servoValue = (int)((upperServo - centerServo) * gimbalYaw) + centerServo;
-                    //qDebug() << "gimbal servo value:" << servoValue;
-                    emit setGimbalPanValue(servoValue);
-                    //emit setDoSetServo(5, servoValue);
-                }
-                */
-                /*
-                if (gimbalYaw >= 500 || gimbalYaw <= -500)
-                {
-                    //map 0 - 1 to the servo limits
-                    //int servoValue = (upperServo - lowerServo) * gimbalYaw + lowerServo;
-                    int servoValue = (int)(0.0156 * gimbalYaw)+ 1500;
-                    qDebug() << "gimbal servo value:" << servoValue;
-                    emit setDoSetServo(5, servoValue);
-                }
-                else
-                {
-                    emit setDoSetServo(5, 1500);
-                    qDebug() << "gimbal servo value:" << 1500;
-                }
-                */
-                //try setting servo
-                // qDebug() << "gimbal gimbalYaw value:" << gimbalYaw;
-                //_activeVehicle->sendCommand(-1,183, true, 5, 900);
+                //   the way MANUAL_CONTROL handles the other channels.                
+                //not used in PTMaxx
+                //emit setGimbalPanValue(gimbalYaw);
             }
         }
     }
@@ -783,18 +758,19 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::setFlightMode,      _activeVehicle, &Vehicle::setFlightMode);
             disconnect(this, &Joystick::gimbalPitchStep,    _activeVehicle, &Vehicle::gimbalPitchStep);
             disconnect(this, &Joystick::gimbalYawStep,      _activeVehicle, &Vehicle::gimbalYawStep);
-            disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
-            disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
-            disconnect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
-            disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
-            disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
-            disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
-            disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
+            //disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
+            //disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
+            //disconnect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
+            //disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
+            //disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
+            //disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
+            //disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
-            disconnect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
-            disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
+            //disconnect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
+            //disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
             disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleAudioPlayback);
+            disconnect(this, &Joystick::setToggleServo,   _activeVehicle, &Vehicle::setToggleServo);
 
         }
         // Always set up the new vehicle
@@ -818,18 +794,19 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::setFlightMode,      _activeVehicle, &Vehicle::setFlightMode);
             connect(this, &Joystick::gimbalPitchStep,    _activeVehicle, &Vehicle::gimbalPitchStep);
             connect(this, &Joystick::gimbalYawStep,      _activeVehicle, &Vehicle::gimbalYawStep);
-            connect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
-            connect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
-            connect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
-            connect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
-            connect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
-            connect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
-            connect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
+            //connect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
+            //connect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
+            //connect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
+            //connect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
+            //connect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
+            //connect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
+            //connect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             connect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
-            connect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
-            connect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
+            //connect(this, &Joystick::setLightMode,       _activeVehicle, &Vehicle::setLight);
+            //connect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             connect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
             connect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleAudioPlayback);
+            connect(this, &Joystick::setToggleServo,   _activeVehicle, &Vehicle::setToggleServo);
 
 
 
@@ -856,18 +833,19 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::setFlightMode,      _activeVehicle, &Vehicle::setFlightMode);
             disconnect(this, &Joystick::gimbalPitchStep,    _activeVehicle, &Vehicle::gimbalPitchStep);
             disconnect(this, &Joystick::gimbalYawStep,      _activeVehicle, &Vehicle::gimbalYawStep);
-            disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
-            disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
-            disconnect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
-            disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
-            disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
-            disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
+            //disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
+            //disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
+            //disconnect(this, &Joystick::set4WSteeringMode,  _activeVehicle, &Vehicle::set4WSteeringMode);
+            //disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
+            //disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
+            //disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::setSlowSpeedMode,   _activeVehicle, &Vehicle::setSlowSpeedMode);
             disconnect(this, &Joystick::gotoNextCamera,     _activeVehicle, &Vehicle::gotoNextCamera);
-            disconnect(this, &Joystick::setLightMode,       _activeVehicle,  &Vehicle::setLight);
-            disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
+            //disconnect(this, &Joystick::setLightMode,       _activeVehicle,  &Vehicle::setLight);
+            //disconnect(this, &Joystick::setGimbalPanValue,  _activeVehicle, &Vehicle::setGimbalPanValue);
             disconnect(this, &Joystick::toggleLocalVideoRecord,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleLocalVideoRecord);
             disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager()   , &VideoManager::toggleAudioPlayback);
+            disconnect(this, &Joystick::setToggleServo,   _activeVehicle, &Vehicle::setToggleServo);
 
         }
         // FIXME: ****
@@ -1202,6 +1180,19 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     else if(action == _buttonActionHighSpeedMode) {
             if (buttonDown) emit setSlowSpeedMode(false);
         }
+    else if(action == _buttonActionToggleServo5) {
+            if (buttonDown) emit setToggleServo(5);
+        }
+    else if(action == _buttonActionToggleServo6) {
+            if (buttonDown) emit setToggleServo(6);
+        }
+    else if(action == _buttonActionToggleServo7) {
+            if (buttonDown) emit setToggleServo(7);
+        }
+    else if(action == _buttonActionToggleServo8) {
+            if (buttonDown) emit setToggleServo(8);
+        }
+
 
     else {
         qCDebug(JoystickLog) << "_buttonAction unknown action:" << action;
@@ -1292,16 +1283,21 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalLeft,    true));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalRight,   true));
     //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalCenter));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonAction2WSteering));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonAction4WSteering));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreArmWeapons));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArmWeapons));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionFireWeapon));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionSlowSpeedMode));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionHighSpeedMode));    
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOff));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOnOvert));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOnIR));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonAction2WSteering));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonAction4WSteering));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreArmWeapons));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArmWeapons));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionFireWeapon));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionSlowSpeedMode));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionHighSpeedMode));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOff));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOnOvert));
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionLightsOnIR));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleServo5));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleServo6));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleServo7));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleServo8));
+
 
     for(int i = 0; i < _assignableButtonActions.count(); i++) {
         AssignableButtonAction* p = qobject_cast<AssignableButtonAction*>(_assignableButtonActions[i]);

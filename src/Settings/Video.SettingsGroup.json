@@ -138,6 +138,6 @@
     "longDescription":  "UDP port to bind to for audio stream.",
     "type":             "uint16",
     "min":              1025,
-    "defaultValue":     5601
+    "defaultValue":     5603
 }
 ]

@@ -25,7 +25,7 @@ message(Qt version $$[QT_VERSION])
 
 include(QGCCommon.pri)
 
-TARGET   = Horizon31GCS
+TARGET   = PTmaxxGCS
 TEMPLATE = app
 QGCROOT  = $$PWD
 
@@ -53,7 +53,7 @@ LinuxBuild {
 }
 
 WindowsBuild {
-    RC_ICONS = resources/icons/h31.ico
+    RC_ICONS = resources/icons/qgroundcontrol.ico
     CONFIG += resources_big
 }
 
@@ -61,15 +61,15 @@ WindowsBuild {
 # Branding
 #
 
-QGC_APP_NAME        = "Horizon31 GCS"
-QGC_ORG_NAME        = "Horizon31.com"
-QGC_ORG_DOMAIN      = "org.horizon31"
-QGC_APP_DESCRIPTION = "Open source ground control app by Horizon31, LLC based on QGroundControl"
-QGC_APP_COPYRIGHT   = "Copyright (C) 2020 horizon31, LLC. All rights reserved."
+QGC_APP_NAME        = "PTXmaxx GCS"
+QGC_ORG_NAME        = "ornl.gov"
+QGC_ORG_DOMAIN      = "ornl.gov"
+QGC_APP_DESCRIPTION = "Open source ground control app by ORNL, based on QGroundControl"
+QGC_APP_COPYRIGHT   = "Copyright (C) 2020 UT-Battele. All rights reserved."
 
 WindowsBuild {
-    QGC_INSTALLER_ICON          = "h31_icon_small.ico"
-    QGC_INSTALLER_HEADER_BITMAP = "h31_installer.bmp"
+    QGC_INSTALLER_ICON          = "WindowsQGC.ico"
+    QGC_INSTALLER_HEADER_BITMAP = "installerheader.bmp"
 }
 
 # Load additional config flags from user_config.pri
@@ -350,9 +350,9 @@ CustomBuild {
         RESOURCES += $$PWD/qgcimages.qrc
     }
 } else {    
-    DEFINES += QGC_APPLICATION_NAME=\"\\\"horizon31 GCS\\\"\"
-    DEFINES += QGC_ORG_NAME=\"\\\"horizon31.com\\\"\"
-    DEFINES += QGC_ORG_DOMAIN=\"\\\"org.horizon31\\\"\"
+    DEFINES += QGC_APPLICATION_NAME=\"\\\"PTmaxx GCS\\\"\"
+    DEFINES += QGC_ORG_NAME=\"\\\"ornl.gov\\\"\"
+    DEFINES += QGC_ORG_DOMAIN=\"\\\"ornl.gov\\\"\"
     RESOURCES += \
         $$PWD/qgroundcontrol.qrc \
         $$PWD/qgcresources.qrc \

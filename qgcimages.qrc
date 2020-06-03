@@ -194,5 +194,9 @@
         <file alias="amarok_outdoor_brand.png">src/ui/toolbar/Images/amarok_outdoor_brand.png</file>
         <file alias="H31LogoFull.svg">resources/H31LogoFull.svg</file>
         <file alias="SpeakerIcon.svg">src/ui/toolbar/Images/SpeakerIcon.svg</file>
+        <file alias="PTXmaxx_indoor_brand.png">src/ui/toolbar/Images/PTXmaxx_indoor_brand.png</file>
+        <file alias="PTXmaxx_outdoor_brand.png">src/ui/toolbar/Images/PTXmaxx_outdoor_brand.png</file>
+        <file alias="QGCLogoWhite.svg">resources/QGCLogoWhite.svg</file>
+        <file alias="ServoIcon.svg">src/ui/toolbar/Images/ServoIcon.svg</file>
     </qresource>
 </RCC>
