@@ -626,6 +626,7 @@ Item {
 
                     }
 
+                    /*
                     QGCLabel {
                         text: qsTr("Audio Enable:")
                         color: "white"
@@ -734,7 +735,7 @@ Item {
                             }
                         }
                     }                   
-
+*/
                     QGCLabel {
                         text: qsTr("Servo 5:")
                         color: "white"
