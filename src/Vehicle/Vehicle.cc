@@ -4123,14 +4123,18 @@ void Vehicle::setGimbalPanValue(float value)
                                            0,
                                            0);
 
-        sendMessageOnLink(priorityLink(), msg);
-        qDebug() << "sending servo command";
+        sendMessageOnLink(priorityLink(), msg);        
         _headingWithGimbalOffset = (_headingFact.rawValue().toInt() - _gimbalDegrees) % 360;
         if (_headingWithGimbalOffset < 0)
             _headingWithGimbalOffset += 360;
 
         emit currentHeadingGimbalCompensationChanged(_headingWithGimbalOffset);
         emit currentGimbalPanChanged(_gimbalDegrees);
+    }
+    else
+    {        
+        _headingWithGimbalOffset = _headingFact.rawValue().toInt();
+        emit currentHeadingGimbalCompensationChanged(_headingWithGimbalOffset);
     }
     if (_gimbalDegrees != 0)
         emit gimbalActiveChanged(true);
