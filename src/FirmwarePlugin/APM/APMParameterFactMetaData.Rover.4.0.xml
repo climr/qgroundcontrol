@@ -25,11 +25,11 @@
     <field name="UnitText">percentage</field>
 </param>
 
-<param humanName="Amarok Gimbal Servo" name="APMrover2:GIMBAL_SERVO" documentation="This is the channel is used for the Amarok servo" user="Amarok">
+<param humanName="Amarok Gimbal Servo" name="APMrover2:GIMBAL_SERVO" documentation="This is the channel is used for the Amarok servo" user="Amarok"> 
+    <value code="3">Servo 3</value>
+    <value code="4">Servo 4</value>
     <value code="5">Servo 5</value>
     <value code="6">Servo 6</value>
-    <value code="7">Servo 7</value>
-    <value code="8">Servo 8</value>
     <value code="9">Servo 9</value>
     <value code="10">Servo 10</value>
     <value code="11">Servo 11</value>
@@ -68,10 +68,9 @@
 </param>
 
 <param humanName="Amarok Overt Light Servo" name="APMrover2:LIGHT_OV_SER" documentation="This value is the channel used for the Amarok overt servo" user="Amarok">
+    <value code="4">Servo 4</value>
     <value code="5">Servo 5</value>
     <value code="6">Servo 6</value>
-    <value code="7">Servo 7</value>
-    <value code="8">Servo 8</value>
     <value code="9">Servo 9</value>
     <value code="10">Servo 10</value>
     <value code="11">Servo 11</value>
@@ -82,10 +81,9 @@
 </param>
 
 <param humanName="Amarok IR Light Servo" name="APMrover2:LIGHT_IR_SER" documentation="This value is the channel used for the Amarok IR servo" user="Amarok">
+    <value code="4">Servo 4</value>
     <value code="5">Servo 5</value>
     <value code="6">Servo 6</value>
-    <value code="7">Servo 7</value>
-    <value code="8">Servo 8</value>
     <value code="9">Servo 9</value>
     <value code="10">Servo 10</value>
     <value code="11">Servo 11</value>
@@ -109,11 +107,11 @@
     <field name="UnitText">pwm in microseconds</field>
 </param>
 
-<param humanName="Amarok Weapon Servo" name="APMrover2:WEAPON_SERVO" documentation="This value is the channel used for the Amarok Weapon" user="Amarok">
+<param humanName="Amarok Weapon Servo" name="APMrover2:WEAPON_SERVO" documentation="This value is the channel used for the Amarok Weapon" user="Amarok">   
+    <value code="3">Servo 3</value>
+    <value code="4">Servo 4</value>
     <value code="5">Servo 5</value>
     <value code="6">Servo 6</value>
-    <value code="7">Servo 7</value>
-    <value code="8">Servo 8</value>
     <value code="9">Servo 9</value>
     <value code="10">Servo 10</value>
     <value code="11">Servo 11</value>
@@ -11543,7 +11541,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim Front Steerng Servo" name="SERVO1_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
+<param humanName="Trim Front ESC Throttle" name="SERVO1_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>
@@ -11668,7 +11666,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim Rear Steering Servo" name="SERVO2_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
+<param humanName="Trim Front Steering Servo" name="SERVO2_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>
@@ -11793,7 +11791,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim Throttle PWM" name="SERVO3_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
+<param humanName="Trim PWM" name="SERVO3_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Standard">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>
@@ -12293,7 +12291,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim PWM" name="SERVO7_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Standard">
+<param humanName="Trim Rear Steering Servo" name="SERVO7_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>
@@ -12418,7 +12416,7 @@
 <field name="Units">PWM</field>
 <field name="UnitText">PWM in microseconds</field>
 </param>
-<param humanName="Trim PWM" name="SERVO8_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Standard">
+<param humanName="Trim Rear ESC Throttle" name="SERVO8_TRIM" documentation="Trim PWM pulse width in microseconds. Typically 1000 is lower limit, 1500 is neutral and 2000 is upper limit." user="Amarok">
 <field name="Range">800 2200</field>
 <field name="Increment">1</field>
 <field name="Units">PWM</field>

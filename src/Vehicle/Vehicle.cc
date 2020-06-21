@@ -4306,6 +4306,8 @@ void Vehicle::setSlowSpeedMode(bool value)
     _slowspeedmode = value;
     int low_throttle;
     int high_throttle;
+    int low_speed_throw = 550;
+    int high_speed_throw = 250;
     if (value)
     {
         //slow, set throttle to value inticated
@@ -4338,11 +4340,11 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo2 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
-                    fact->setRawValue(servo2_trim + 500);  //work to pull these in from settings
+                    fact->setRawValue(servo2_trim + low_speed_throw);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                    fact->setRawValue(servo2_trim - 500);  //work to pull these in from settings
+                    fact->setRawValue(servo2_trim - low_speed_throw);  //work to pull these in from settings
                 }
             }
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_TRIM")) {
@@ -4352,11 +4354,11 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo7 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
-                    fact->setRawValue(servo7_trim + 500);  //work to pull these in from settings
+                    fact->setRawValue(servo7_trim + low_speed_throw);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                    fact->setRawValue(servo7_trim - 500);  //work to pull these in from settings
+                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
+                    fact->setRawValue(servo7_trim - low_speed_throw);  //work to pull these in from settings
                 }
             }
         }
@@ -4392,11 +4394,11 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo2 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
-                    fact->setRawValue(servo2_trim + 200);  //work to pull these in from settings
+                    fact->setRawValue(servo2_trim + high_speed_throw);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                    fact->setRawValue(servo2_trim - 200);  //work to pull these in from settings
+                    fact->setRawValue(servo2_trim - high_speed_throw);  //work to pull these in from settings
                 }
             }
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_TRIM")) {
@@ -4406,11 +4408,11 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo7 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
-                    fact->setRawValue(servo7_trim + 200);  //work to pull these in from settings
+                    fact->setRawValue(servo7_trim + high_speed_throw);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
-                    fact->setRawValue(servo7_trim - 200);  //work to pull these in from settings
+                    fact->setRawValue(servo7_trim - high_speed_throw);  //work to pull these in from settings
                 }
             }
         }
@@ -4460,7 +4462,7 @@ void Vehicle::setWeaponFire(bool value)
         }
 
 
-    if (!value)  //false
+    if (!value)  //false, weapon not fire
     {
         sendMavCommand(defaultComponentId(),
                        MAV_CMD_DO_SET_SERVO,
