@@ -779,7 +779,7 @@ Item {
                     }
                     QGCLabel {
                         text: getLightModeName()
-                        color: "white"
+                        color: (activeVehicle) ? ((activeVehicle.currentLight !== 0) ? "red" : "white") : "Loading..";
                         function getLightModeName() {
                             if (activeVehicle)
                             {

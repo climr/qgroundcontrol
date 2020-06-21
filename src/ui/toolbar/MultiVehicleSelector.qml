@@ -46,7 +46,7 @@ QGCComboBox {
             for (var i = 0; i < QGroundControl.multiVehicleManager.vehicles.count; i++) {
                 var vehicle = QGroundControl.multiVehicleManager.vehicles.get(i)
 
-                newModel.push(qsTr("Vehicle") + " " + vehicle.id + " ("+ vehicle.sourceAddressPretty + ")")
+                newModel.push(qsTr("ARMK-") + vehicle.id + " ("+ vehicle.sourceAddressPretty + ")")
 
                 if (vehicle.id === _activeVehicle.id) {
                     newCurrentIndex = i

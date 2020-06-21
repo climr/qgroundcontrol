@@ -127,7 +127,8 @@ Item {
                 //center reticle grid for patrios
                 Rectangle {  //radius makes this a circle
                     color:  Qt.rgba(0,0,0,0)
-                    border.color:   Qt.rgba(1,1,1,0.5)
+                    //border.color:   Qt.rgba(1,1,1,0.5)
+                    border.color: (activeVehicle.weaponsPreArmed) ? Qt.rgba(1,0,0,0.5) : Qt.rgba(1,1,1,0.5)
                     height: parent.height * .5
                     width:  parent.height * .5
                     radius: width
