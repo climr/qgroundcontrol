@@ -48,6 +48,7 @@ public:
      * @return true: This message is a of a severity which is considered an error
      */
     bool severityIsError();
+    bool severityIsCritical();
 
 private:
     UASMessage(int componentid, int severity, QString text);

@@ -39,6 +39,18 @@ bool UASMessage::severityIsError()
     }
 }
 
+bool UASMessage::severityIsCritical()
+{
+    switch (_severity) {
+        case MAV_SEVERITY_EMERGENCY:
+        case MAV_SEVERITY_ALERT:
+        case MAV_SEVERITY_CRITICAL:
+            return true;
+        default:
+            return false;
+    }
+}
+
 UASMessageHandler::UASMessageHandler(QGCApplication* app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
     , _activeVehicle(nullptr)
@@ -201,7 +213,7 @@ void UASMessageHandler::handleTextMessage(int, int compId, int severity, QString
     int count = _messages.count();
     emit textMessageCountChanged(count);
 
-    if (_showErrorsInToolbar && message->severityIsError()) {
+    if (_showErrorsInToolbar && message->severityIsCritical()) {  //was severityIsError
         _app->showMessage(message->getText());
     }
 }

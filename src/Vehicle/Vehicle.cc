@@ -981,6 +981,8 @@ void Vehicle::_handleStatusText(mavlink_message_t& message, bool longVersion)
         }
     }
 
+    //let's not read any of these aloud
+    skipSpoken = true;
 
     // If the message is NOTIFY or higher severity, or starts with a '#',
     // then read it aloud.
