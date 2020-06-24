@@ -23,6 +23,7 @@ const char* VideoSettings::videoSourceNoVideo   = "No Video Available";
 const char* VideoSettings::videoDisabled        = "Video Stream Disabled";
 const char* VideoSettings::videoSourceRTSP      = "RTSP Video Stream";
 const char* VideoSettings::videoSourceMulticastUDPH264   = "Multicast UDP h.264 Video Stream";
+const char* VideoSettings::videoSourceMulticastUDPH265   = "Multicast UDP h.265 Video Stream";
 const char* VideoSettings::videoSourceUDPH264   = "Unicast UDP h.264 Video Stream";
 const char* VideoSettings::videoSourceUDPH265   = "UDP h.265 Video Stream";
 const char* VideoSettings::videoSourceTCP       = "TCP-MPEG2 Video Stream";
@@ -38,6 +39,7 @@ DECLARE_SETTINGGROUP(Video, "Video")
     videoSourceList.append(videoSourceRTSP);
 #ifndef NO_UDP_VIDEO
     videoSourceList.append(videoSourceMulticastUDPH264);
+    videoSourceList.append(videoSourceMulticastUDPH265);
     videoSourceList.append(videoSourceUDPH264);
     videoSourceList.append(videoSourceUDPH265);
 #endif
@@ -162,7 +164,7 @@ bool VideoSettings::streamConfigured(void)
         return false;
     }
     //-- If UDP, check if port is set
-    if(vSource == videoSourceUDPH264 || vSource == videoSourceUDPH265 || vSource == videoSourceMulticastUDPH264) {
+    if(vSource == videoSourceUDPH264 || vSource == videoSourceUDPH265 || vSource == videoSourceMulticastUDPH264 || vSource == videoSourceMulticastUDPH265) {
         qCDebug(VideoManagerLog) << "Testing configuration for UDP Stream:" << udpPort()->rawValue().toInt();
         return udpPort()->rawValue().toInt() != 0;
     }
