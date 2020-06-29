@@ -39,12 +39,11 @@ bool UASMessage::severityIsError()
     }
 }
 
-bool UASMessage::severityIsCritical()
+bool UASMessage::severityIsAlert()
 {
     switch (_severity) {
         case MAV_SEVERITY_EMERGENCY:
-        case MAV_SEVERITY_ALERT:
-        case MAV_SEVERITY_CRITICAL:
+        case MAV_SEVERITY_ALERT:        
             return true;
         default:
             return false;
@@ -160,7 +159,7 @@ void UASMessageHandler::handleTextMessage(int, int compId, int severity, QString
         break;
     }
 
-    // And determine the text for the severitie
+    // And determine the text for the severity
     QString severityText;
     switch (severity)
     {
@@ -213,7 +212,7 @@ void UASMessageHandler::handleTextMessage(int, int compId, int severity, QString
     int count = _messages.count();
     emit textMessageCountChanged(count);
 
-    if (_showErrorsInToolbar && message->severityIsCritical()) {  //was severityIsError
+    if (_showErrorsInToolbar && message->severityIsAlert()) {  //was severityIsError
         _app->showMessage(message->getText());
     }
 }

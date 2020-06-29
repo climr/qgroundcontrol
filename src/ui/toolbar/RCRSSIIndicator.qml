@@ -26,8 +26,9 @@ Item {
 
     property bool showIndicator: _activeVehicle.supportsRadio
 
-    property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
-    property bool   _rcRSSIAvailable:   activeVehicle ? activeVehicle.rcRSSI > 0 && activeVehicle.rcRSSI <= 100 : false
+    property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle    
+    property bool   _rcRSSIAvailable:   true //activeVehicle ? activeVehicle.mavlinkLossPercent >= 0 && activeVehicle.mavlinkLossPercent <= 100 : false
+    //property bool   _rcRSSIAvailable:   activeVehicle ? activeVehicle.rcRSSI > 0 && activeVehicle.rcRSSI <= 100 : false
 
     Component {
         id: rcRSSIInfo
@@ -62,7 +63,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     QGCLabel { text: qsTr("RSSI:") }
-                    QGCLabel { text: activeVehicle ? (activeVehicle.rcRSSI + "%") : 0 }
+                    QGCLabel { text: activeVehicle ? (100 - activeVehicle.mavlinkLossPercent.toFixed(0) + "%") : 0 }
                 }
             }
         }
@@ -88,7 +89,13 @@ Item {
         SignalStrength {
             anchors.verticalCenter: parent.verticalCenter
             size:                   parent.height * 0.5
-            percent:                _rcRSSIAvailable ? activeVehicle.rcRSSI : 0
+            percent:                _activeVehicle ? (100 - activeVehicle.mavlinkLossPercent.toFixed(0)) : 0
+        }
+        QGCLabel {
+            id:             rssiLabel2
+            text:           activeVehicle ? (100 - activeVehicle.mavlinkLossPercent.toFixed(0) + "%") : 0
+            font.pointSize:         ScreenTools.mediumFontPointSize
+            anchors.verticalCenter: parent.verticalCenter
         }
     }
 

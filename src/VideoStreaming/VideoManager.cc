@@ -496,12 +496,12 @@ VideoManager::_updateSettings()
         if (_activeVehicle)
         {
              _videoReceiver->setUri(QStringLiteral("udp265://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->udpPort()->rawValue().toInt()));
-             _videoReceiver->setAudioUri(QStringLiteral("udp265://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+             _videoReceiver->setAudioUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
         }
         else
         {
             _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));     //use unicast until a vehicle is connected
-            _videoReceiver->setAudioUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+            _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
         }
     }
 

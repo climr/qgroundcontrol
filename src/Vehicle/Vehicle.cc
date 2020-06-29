@@ -986,7 +986,7 @@ void Vehicle::_handleStatusText(mavlink_message_t& message, bool longVersion)
 
     // If the message is NOTIFY or higher severity, or starts with a '#',
     // then read it aloud.
-    if (messageText.startsWith("#") || severity <= MAV_SEVERITY_NOTICE) {
+    if (messageText.startsWith("#") || severity <= MAV_SEVERITY_ERROR) {  // was MAV_SEVERITY_NOTICE
         messageText.remove("#");
         if (!skipSpoken) {
             qgcApp()->toolbox()->audioOutput()->say(messageText);

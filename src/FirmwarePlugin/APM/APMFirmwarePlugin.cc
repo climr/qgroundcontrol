@@ -194,7 +194,11 @@ QStringList APMFirmwarePlugin::flightModes(Vehicle* vehicle)
     QStringList flightModesList;
     foreach (const APMCustomMode& customMode, _supportedModes) {
         if (customMode.canBeSet()) {
-            flightModesList << customMode.modeString();
+            //this is a hack because we only want manual and hold modes available for the Amarok vehicle
+            if (vehicle->rover() && (customMode.modeString() == "Manual" || customMode.modeString() == "Hold"))
+                flightModesList << customMode.modeString();
+            else if (!vehicle->rover())
+                flightModesList << customMode.modeString();
         }
     }
     return flightModesList;
