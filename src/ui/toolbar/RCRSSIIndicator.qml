@@ -75,7 +75,7 @@ Item {
         anchors.bottom: parent.bottom
         spacing:        ScreenTools.defaultFontPixelWidth
 
-        QGCColoredImage {
+        /*QGCColoredImage {
             width:              height
             anchors.top:        parent.top
             anchors.bottom:     parent.bottom
@@ -85,6 +85,7 @@ Item {
             opacity:            _rcRSSIAvailable ? 1 : 0.5
             color:              qgcPal.buttonText
         }
+        */
 
         SignalStrength {
             anchors.verticalCenter: parent.verticalCenter

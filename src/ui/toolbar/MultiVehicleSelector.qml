@@ -47,19 +47,20 @@ QGCComboBox {
                 var vehicle = QGroundControl.multiVehicleManager.vehicles.get(i)
 
                 newModel.push(qsTr("ARMK-") + vehicle.id + " ("+ vehicle.sourceAddressPretty + ")")
-
                 if (vehicle.id === _activeVehicle.id) {
                     newCurrentIndex = i
                 }
             }
-       // }
+        //}
         currentIndex = -1
         _vehicleModel = newModel
         currentIndex = newCurrentIndex
     }
 
     onActivated: {
-        var vehicleId = textAt(index).split(" ")[1]
+        //this feels a bit hacky, but it's the was QGCS was doing it. You need to extract the sysid from the text used in the
+        //drop down box. This will have to changed if line 49 above is changed.
+        var vehicleId = textAt(index).split(" ")[0].split("-")[1]
         var vehicle = QGroundControl.multiVehicleManager.getVehicleById(vehicleId)
         QGroundControl.multiVehicleManager.activeVehicle = vehicle
     }
