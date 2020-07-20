@@ -4098,13 +4098,16 @@ void Vehicle::setGimbalPanValue(float value)
 
     if (value < 0)
     {
+
       servoValue = (int)((midpoint - lowerPoint) * value) + midpoint;
-      _gimbalDegrees = -1 * (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)midpoint - (float)servoValue));
+      _gimbalDegrees = (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)servoValue - (float)midpoint));
+      //_gimbalDegrees = -1 * (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)midpoint - (float)servoValue));
     }
     else
     {
       servoValue = (int)((upperPoint - midpoint) * value) + midpoint;
-      _gimbalDegrees = (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)servoValue - (float)midpoint));
+      _gimbalDegrees = -1 * (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)midpoint - (float)servoValue));
+      //_gimbalDegrees = (((float)gimbalSwing / ((float)upperPoint - (float)lowerPoint)) * ((float)servoValue - (float)midpoint));
     }
 
     if (!_centeredGimbal)
@@ -4127,7 +4130,7 @@ void Vehicle::setGimbalPanValue(float value)
                                            0);
 
         sendMessageOnLink(priorityLink(), msg);        
-        _headingWithGimbalOffset = (_headingFact.rawValue().toInt() - _gimbalDegrees) % 360;
+        _headingWithGimbalOffset = (_headingFact.rawValue().toInt() + _gimbalDegrees) % 360;
         if (_headingWithGimbalOffset < 0)
             _headingWithGimbalOffset += 360;
 

@@ -630,12 +630,12 @@ void Joystick::_handleAxis()
                 //the gimbal yaw axis is 5, so hard coding.
                 //axis = _rgFunctionAxis[gimbalYawFunction];
                 axis = 5;
-                gimbalYaw = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis], true);  //specifing to use deadband
+                gimbalYaw = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis], true) * -1;  //specifing to use deadband
                 //qDebug() << "gimbal gimbalYaw value preaccumulator:" << gimbalYaw << _rgAxisValues[axis];
 
 
                 //gimbal accumulator, this is used to smooth out the gimbal response with fast servos
-                int gimbalRate = 20;
+                int gimbalRate = 15;
                 //get gimbalRate from parameters
                 if (_multiVehicleManager->activeVehicle()->parameterManager()->parameterExists(FactSystem::defaultComponentId, "GIMBAL_SPEED")) {
                     Fact* fact = _multiVehicleManager->activeVehicle()->parameterManager()->getParameter(FactSystem::defaultComponentId, "GIMBAL_SPEED");
