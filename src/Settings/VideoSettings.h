@@ -45,6 +45,8 @@ public:
     Q_PROPERTY(QString  multicastUdp264VideoSource       READ multicastUdp264VideoSource      CONSTANT)
     Q_PROPERTY(QString  multicastUdp265VideoSource       READ multicastUdp265VideoSource      CONSTANT)
     Q_PROPERTY(QString  udp265VideoSource       READ udp265VideoSource      CONSTANT)
+    Q_PROPERTY(QString  udp265VideoSourceStreamControl      READ udp265VideoSourceStreamControl      CONSTANT)
+    Q_PROPERTY(QString  udp264VideoSourceStreamControl      READ udp264VideoSourceStreamControl      CONSTANT)
     Q_PROPERTY(QString  tcpVideoSource          READ tcpVideoSource         CONSTANT)
     Q_PROPERTY(QString  mpegtsVideoSource       READ mpegtsVideoSource      CONSTANT)
     Q_PROPERTY(QString  disabledVideoSource     READ disabledVideoSource      CONSTANT)
@@ -56,6 +58,8 @@ public:
     QString  multicastUdp264VideoSource     () { return videoSourceMulticastUDPH264; }
     QString  multicastUdp265VideoSource     () { return videoSourceMulticastUDPH265; }
     QString  udp265VideoSource      () { return videoSourceUDPH265; }
+    QString  udp265VideoSourceStreamControl () { return videoSourceUDPH265StreamControl; }
+    QString  udp264VideoSourceStreamControl () { return videoSourceUDPH264StreamControl; }
     QString  tcpVideoSource         () { return videoSourceTCP; }
     QString  mpegtsVideoSource      () { return videoSourceMPEGTS; }
     QString  disabledVideoSource    () { return videoDisabled; }
@@ -66,6 +70,8 @@ public:
     static const char* videoSourceMulticastUDPH264;
     static const char* videoSourceMulticastUDPH265;
     static const char* videoSourceUDPH265;
+    static const char* videoSourceUDPH265StreamControl;
+    static const char* videoSourceUDPH264StreamControl;
     static const char* videoSourceRTSP;
     static const char* videoSourceTCP;
     static const char* videoSourceMPEGTS;

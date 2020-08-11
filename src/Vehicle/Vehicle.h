@@ -832,6 +832,7 @@ public:
     void setLight(int value);
     void setGimbalPanValue(float value);
     void gotoNextCamera();
+
     int joystickMode();
     void setJoystickMode(int mode);
 
@@ -1409,6 +1410,8 @@ private:
     void _handleCameraImageCaptured     (const mavlink_message_t& message);
     void _handleADSBVehicle             (const mavlink_message_t& message);
     void _setCameraPosition             (int value);
+    void _sendCurrentCameraPosition     ();
+    void _videoSettingsChanged          ();
     void _missionManagerError           (int errorCode, const QString& errorMsg);
     void _geoFenceManagerError          (int errorCode, const QString& errorMsg);
     void _rallyPointManagerError        (int errorCode, const QString& errorMsg);
@@ -1519,6 +1522,7 @@ private:
 
     QList<MavCommandQueueEntry_t>   _mavCommandQueue;
     QTimer                          _mavCommandAckTimer;
+    QTimer                          _streamControlTimer;
     int                             _mavCommandRetryCount;
     int                             _capabilitiesRetryCount =               0;
     QTime                           _capabilitiesRetryElapsed;

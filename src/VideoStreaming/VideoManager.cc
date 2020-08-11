@@ -343,6 +343,8 @@ VideoManager::isGStreamer()
         videoSource == VideoSettings::videoSourceRTSP ||
         videoSource == VideoSettings::videoSourceTCP ||
         videoSource == VideoSettings::videoSourceMPEGTS ||
+        videoSource == VideoSettings::videoSourceUDPH265StreamControl ||
+        videoSource == VideoSettings::videoSourceUDPH264StreamControl ||
         autoStreamConfigured();
 #else
     return false;
@@ -511,7 +513,30 @@ VideoManager::_updateSettings()
         _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
     }
     else if (source == VideoSettings::videoSourceUDPH265)
+    {        
         _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+        _videoReceiver->setAudioUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
+    }
+    else if (source == VideoSettings::videoSourceUDPH265StreamControl)
+    {
+        //port + _activeVehicle->id
+        if (_activeVehicle)
+        {
+            _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt() + _activeVehicle->id()));
+            _videoReceiver->setAudioUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt() + _activeVehicle->id()));
+            qDebug() << "Video and Audio ports changed " << _videoSettings->udpPort()->rawValue().toInt() + _activeVehicle->id() << " and " << _videoSettings->audioUdpPort()->rawValue().toInt() + _activeVehicle->id();
+        }
+    }
+    else if (source == VideoSettings::videoSourceUDPH264StreamControl)
+    {
+        //port + _activeVehicle->id
+        if (_activeVehicle)
+        {
+            _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt() + _activeVehicle->id()));
+            _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt() + _activeVehicle->id()));
+            qDebug() << "Video and Audio ports changed " << _videoSettings->udpPort()->rawValue().toInt() + _activeVehicle->id() << " and " << _videoSettings->audioUdpPort()->rawValue().toInt() + _activeVehicle->id();
+        }
+    }
     else if (source == VideoSettings::videoSourceMPEGTS)
         _videoReceiver->setUri(QStringLiteral("mpegts://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceRTSP)

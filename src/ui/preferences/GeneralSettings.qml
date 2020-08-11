@@ -51,6 +51,8 @@ Rectangle {
     property bool   _isMulticastUDP265:         _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.multicastUdp265VideoSource
     property bool   _isUDP264:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.udp264VideoSource
     property bool   _isUDP265:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.udp265VideoSource
+    property bool   _isUDP265StreamControl:     _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.udp265VideoSourceStreamControl
+    property bool   _isUDP264StreamControl:     _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.udp264VideoSourceStreamControl
     property bool   _isRTSP:                    _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.rtspVideoSource
     property bool   _isTCP:                     _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.tcpVideoSource
     property bool   _isMPEGTS:                  _isGst && _videoSource === QGroundControl.settingsManager.videoSettings.mpegtsVideoSource    
@@ -992,15 +994,23 @@ Rectangle {
                                 Layout.maximumWidth:  videoSource.width * 1.5
                                 Layout.columnSpan: 2
                             }
+                            QGCLabel {
+                                text:       qsTr("Sends periodic control messages to the vehicle for camera/stream control and dynamically adjust the audio/video ports based on the system id of the active vehicle. Receive ports are below values + system id.")
+                                wrapMode:   Text.WordWrap
+                                font.pointSize:       ScreenTools.smallFontPointSize
+                                visible: _isUDP265StreamControl || _isUDP264StreamControl
+                                Layout.maximumWidth:  videoSource.width * 1.5
+                                Layout.columnSpan: 2
+                            }
 
                             QGCLabel {
                                 text:                   qsTr("UDP Port")
-                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP264 || _isMulticastUDP265)  && QGroundControl.settingsManager.videoSettings.udpPort.visible
+                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP264 || _isMulticastUDP265 || _isUDP265StreamControl || _isUDP264StreamControl)  && QGroundControl.settingsManager.videoSettings.udpPort.visible
                             }
                             FactTextField {
                                 Layout.preferredWidth:  _comboFieldWidth
                                 fact:                   QGroundControl.settingsManager.videoSettings.udpPort
-                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP264 || _isMulticastUDP265) && QGroundControl.settingsManager.videoSettings.udpPort.visible
+                                visible:                (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP264 || _isMulticastUDP265 || _isUDP265StreamControl || _isUDP264StreamControl) && QGroundControl.settingsManager.videoSettings.udpPort.visible
                             }
 
                             QGCLabel {
@@ -1053,21 +1063,21 @@ Rectangle {
                             }
                             QGCLabel {
                                 text:                   qsTr("Enable Audio Streaming")
-                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265) && QGroundControl.settingsManager.videoSettings.audio.visible
+                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265 || _isUDP265StreamControl || _isUDP264StreamControl) && QGroundControl.settingsManager.videoSettings.audio.visible
                             }
                             FactCheckBox {
                                 text:                   ""
                                 fact:                   QGroundControl.settingsManager.videoSettings.audio
-                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265) && QGroundControl.settingsManager.videoSettings.audio.visible
+                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265 || _isUDP265StreamControl || _isUDP264StreamControl) && QGroundControl.settingsManager.videoSettings.audio.visible
                             }
                             QGCLabel {
                                 text:                   qsTr("Audio Port")
-                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
+                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265 || _isUDP265StreamControl || _isUDP264StreamControl) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
                             }
                             FactTextField {
                                 Layout.preferredWidth:  _comboFieldWidth
                                 fact:                   QGroundControl.settingsManager.videoSettings.audioUdpPort
-                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
+                                visible:                (_isMulticastUDP264 || _isUDP264 || _isMulticastUDP265 || _isUDP265 || _isUDP265StreamControl || _isUDP264StreamControl) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
                             }
                         }
                     }

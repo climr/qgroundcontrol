@@ -50,6 +50,8 @@ MultiVehicleManager::MultiVehicleManager(QGCApplication* app, QGCToolbox* toolbo
     if (_gcsHeartbeatEnabled) {
         _gcsHeartbeatTimer.start();
     }
+
+    //now add video init periodic message. This is a hack that allows the vehicle to know it has an active gcs connected to it
 }
 
 void MultiVehicleManager::setToolbox(QGCToolbox *toolbox)
@@ -243,6 +245,7 @@ void MultiVehicleManager::_deleteVehiclePhase2(void)
     }
 
     _activeVehicle = newActiveVehicle;
+
     emit activeVehicleChanged(newActiveVehicle);
 
     if (_activeVehicle) {
@@ -397,6 +400,7 @@ void MultiVehicleManager::_sendGCSHeartbeat(void)
             link->writeBytesSafe((const char*)buffer, len);
         }
     }
+
 }
 
 bool MultiVehicleManager::linkInUse(LinkInterface* link, Vehicle* skipVehicle)

@@ -257,6 +257,12 @@ Vehicle::Vehicle(LinkInterface*             link,
     _mavCommandAckTimer.setInterval(_highLatencyLink ? _mavCommandAckTimeoutMSecsHighLatency : _mavCommandAckTimeoutMSecs);
     connect(&_mavCommandAckTimer, &QTimer::timeout, this, &Vehicle::_sendMavCommandAgain);
 
+    // Stream Control timer
+    _streamControlTimer.setInterval(1000);
+    _streamControlTimer.setSingleShot(false);
+    connect(&_streamControlTimer, &QTimer::timeout, this, &Vehicle::_sendCurrentCameraPosition);
+    //don't start this timer until the vehicle is active
+
     _mav = uas();
 
     // Listen for system messages
@@ -442,6 +448,7 @@ void Vehicle::_commonInit()
 {
     _firmwarePlugin = _firmwarePluginManager->firmwarePluginForAutopilot(_firmwareType, _vehicleType);
 
+
     connect(_firmwarePlugin, &FirmwarePlugin::toolbarIndicatorsChanged, this, &Vehicle::toolBarIndicatorsChanged);
 
     connect(this, &Vehicle::coordinateChanged,      this, &Vehicle::_updateDistanceHeadingToHome);
@@ -450,6 +457,8 @@ void Vehicle::_commonInit()
     connect(this, &Vehicle::hobbsMeterChanged,      this, &Vehicle::_updateHobbsMeter);
 
     connect(_toolbox->qgcPositionManager(), &QGCPositionManager::gcsPositionChanged, this, &Vehicle::_updateDistanceToGCS);
+
+    connect(_toolbox->videoManager(), &VideoManager::hasVideoChanged, this, &Vehicle::_videoSettingsChanged);
 
     _missionManager = new MissionManager(this);
     connect(_missionManager, &MissionManager::error,                    this, &Vehicle::_missionManagerError);
@@ -2417,6 +2426,12 @@ void Vehicle::setActive(bool active)
         _setCameraPosition(0);  //start off with first camera selected
         _startJoystick(false);
         emit activeChanged(_active);
+
+        //control the stream control timer
+        if (active && (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl))
+            _streamControlTimer.start();
+        else
+            _streamControlTimer.stop();
     }
 }
 
@@ -4262,6 +4277,8 @@ void Vehicle::setLight(int c)
 }
 void Vehicle::_setCameraPosition(int c)
 {
+    //first stop the timer if it is running
+     _streamControlTimer.stop();
     _currentCamera = c;
     MAV_COMPONENT cam;
     if (c==0) cam = MAV_COMP_ID_CAMERA;
@@ -4281,9 +4298,54 @@ void Vehicle::_setCameraPosition(int c)
                    0,
                    0,
                    0);
+
+    //restart the stream control timer
+    if (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl)
+        _streamControlTimer.start();
+
 }
+void Vehicle::_sendCurrentCameraPosition()
+{
+    MAV_COMPONENT cam;
+    if (_currentCamera==0) cam = MAV_COMP_ID_CAMERA;
+    else if (_currentCamera==1)  cam = MAV_COMP_ID_CAMERA2;
+    else cam = MAV_COMP_ID_CAMERA3;
+
+    qDebug() << "Sending periodic camera message, sysid = " << _id << " camera = " << _currentCamera;
+
+    //sending this as a individual message since we don't care about acks and retries for this
+    mavlink_message_t msg;
+    mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                       defaultComponentId(),
+                                       priorityLink()->mavlinkChannel(),
+                                       &msg,
+                                       _id,
+                                       cam,   // target component
+                                       MAV_CMD_SET_CAMERA_MODE,    // command id
+                                       0,                                // 0=first transmission of command
+                                       CAMERA_MODE_VIDEO,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                       0,
+                                       0);
+     sendMessageOnLink(priorityLink(), msg);
+
+}
+void Vehicle::_videoSettingsChanged()
+{
+    qDebug() << "Notice that video settings have changed";
+    if (_active && (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl))
+        _streamControlTimer.start();
+    else
+        _streamControlTimer.stop();
+
+}
+
 void Vehicle::gotoNextCamera()
 {
+    _streamControlTimer.stop();
     int c = _currentCamera + 1;
     if(c >= 3) c = 0;
     _currentCamera = c;
@@ -4305,6 +4367,9 @@ void Vehicle::gotoNextCamera()
                    0,
                    0,
                    0);
+    //restart the stream control timer
+    if (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl)
+        _streamControlTimer.start();
 }
 void Vehicle::setSlowSpeedMode(bool value)
 {
