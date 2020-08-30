@@ -26,8 +26,8 @@ QGCTextField {
                           Qt.ImhNone :                // iOS numeric keyboard has no done button, we can't use it
                           Qt.ImhFormattedNumbersOnly  // Forces use of virtual numeric keyboard
 
-    onEditingFinished: {
-        var errorString = fact.validate(text, false /* convertOnly */)
+    onEditingFinished: {        
+        var errorString = fact.validate(text, false /* convertOnly */)        
         if (errorString === "") {
             fact.value = text
             _textField.updated()

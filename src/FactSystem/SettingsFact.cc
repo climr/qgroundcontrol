@@ -39,7 +39,7 @@ SettingsFact::SettingsFact(QString settingsGroup, FactMetaData* metaData, QObjec
         QVariant rawDefaultValue = metaData->rawDefaultValue();
         if (_visible) {
             QVariant typedValue;
-            QString errorString;
+            QString errorString;            
             metaData->convertAndValidateRaw(settings.value(_name, rawDefaultValue), true /* conertOnly */, typedValue, errorString);
             _rawValue = typedValue;
         } else {

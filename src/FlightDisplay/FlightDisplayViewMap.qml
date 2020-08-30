@@ -173,6 +173,9 @@ FlightMap {
             }
         }
     }
+    function centerMaponVehicle() {
+           flightMap.center = _activeVehicleCoordinate
+    }
 
     on_ActiveVehicleCoordinateChanged: {
         if (_keepMapCenteredOnVehicle && _activeVehicleCoordinate.isValid && !_disableVehicleTracking) {

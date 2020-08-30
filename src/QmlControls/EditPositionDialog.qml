@@ -74,7 +74,7 @@ QGCViewDialog {
                 }
 
                 Item { width: 1; height: ScreenTools.defaultFontPixelHeight; Layout.columnSpan: 2}
-
+/*
                 QGCLabel {
                     text: qsTr("Zone")
                 }
@@ -119,6 +119,7 @@ QGCViewDialog {
                 }
 
                 Item { width: 1; height: ScreenTools.defaultFontPixelHeight; Layout.columnSpan: 2}
+                */
 
                 QGCLabel {
                     text:              qsTr("MGRS")
@@ -137,7 +138,7 @@ QGCViewDialog {
                         reject()
                     }
                 }
-
+/*
                 Item { width: 1; height: ScreenTools.defaultFontPixelHeight; Layout.columnSpan: 2}
 
                 QGCButton {
@@ -150,6 +151,7 @@ QGCViewDialog {
                         reject()
                     }
                 }
+                */
             }
         } // Column
     } // QGCFlickable

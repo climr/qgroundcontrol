@@ -1184,6 +1184,29 @@ void Vehicle::_handleAttitudeQuaternion(mavlink_message_t& message)
     yawRate()->setRawValue(qRadiansToDegrees(rates[2]));
 }
 
+void Vehicle::setStaticPosition(QGeoCoordinate newPosition)
+{
+
+     if (newPosition != _coordinate) {
+         _coordinate = newPosition;
+         emit coordinateChanged(_coordinate);
+     }
+    _gpsFactGroup.lat()->setRawValue(newPosition.latitude());
+    _gpsFactGroup.lon()->setRawValue(newPosition.longitude());
+    _gpsFactGroup.mgrs()->setRawValue(convertGeoToMGRS(QGeoCoordinate(newPosition.latitude(), newPosition.longitude())));
+    _gpsFactGroup.count()->setRawValue(0);
+    _gpsFactGroup.hdop()->setRawValue(0);
+    _gpsFactGroup.vdop()->setRawValue(0);
+    _gpsFactGroup.courseOverGround()->setRawValue(std::numeric_limits<double>::quiet_NaN() );
+    _gpsFactGroup.lock()->setRawValue(GPS_FIX_TYPE_STATIC);
+
+    //not 100% sure if we should set home position.. but... will give it a shot
+    if (newPosition != _homePosition) {
+        _homePosition = newPosition;
+        emit homePositionChanged(_homePosition);
+    }
+
+}
 void Vehicle::_handleGpsRawInt(mavlink_message_t& message)
 {
     mavlink_gps_raw_int_t gpsRawInt;
@@ -1202,6 +1225,10 @@ void Vehicle::_handleGpsRawInt(mavlink_message_t& message)
         }
     }
 
+    if (gpsRawInt.fix_type == GPS_FIX_TYPE_NO_GPS || gpsRawInt.fix_type == GPS_FIX_TYPE_NO_FIX)
+        return;
+
+    qDebug()<< "setting gps fact group from handlegpsrawint";
     _gpsFactGroup.lat()->setRawValue(gpsRawInt.lat * 1e-7);
     _gpsFactGroup.lon()->setRawValue(gpsRawInt.lon * 1e-7);
     _gpsFactGroup.mgrs()->setRawValue(convertGeoToMGRS(QGeoCoordinate(gpsRawInt.lat * 1e-7, gpsRawInt.lon * 1e-7)));

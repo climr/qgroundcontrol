@@ -837,6 +837,7 @@ public:
     void setLight(int value);
     void setGimbalPanValue(float value);
     Q_INVOKABLE void setServoValue(int servo, int value);
+    Q_INVOKABLE void setStaticPosition(QGeoCoordinate newPosition);
     Q_INVOKABLE void gotoNextCamera();
     void setToggleServo(int value);
     int joystickMode();
@@ -1381,7 +1382,7 @@ private:
     void _joystickChanged               (Joystick* joystick);
     void _loadSettings                  ();
     void _saveSettings                  ();
-    void _startJoystick                 (bool start);
+    void _startJoystick                 (bool start);    
     void _handlePing                    (LinkInterface* link, mavlink_message_t& message);
     void _handleHomePosition            (mavlink_message_t& message);
     void _handleHeartbeat               (mavlink_message_t& message);

@@ -71,7 +71,7 @@ void EditPositionDialogController::initValues(void)
 }
 
 void EditPositionDialogController::setFromGeo(void)
-{
+{    
     _coordinate.setLatitude(_latitudeFact.rawValue().toDouble());
     _coordinate.setLongitude(_longitudeFact.rawValue().toDouble());
     emit coordinateChanged(_coordinate);

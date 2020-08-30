@@ -68,6 +68,8 @@ Item {
     property bool   _streamingEnabled:              QGroundControl.settingsManager.videoSettings.streamConfigured
     property bool   _audioEnabled:                  QGroundControl.settingsManager.videoSettings.audioEnabled
 
+    property var    activeVehicleCoordinate:        activeVehicle ? activeVehicle.coordinate : QtPositioning.coordinate(0,0,0)
+
     readonly property var       _dynamicCameras:        activeVehicle ? activeVehicle.dynamicCameras : null
     readonly property bool      _isCamera:              _dynamicCameras ? _dynamicCameras.cameras.count > 0 : false
     readonly property real      _defaultRoll:           0
@@ -94,6 +96,23 @@ Item {
             }
         }
     }
+
+    function centerToSpecifiedLocation() {
+        mainWindow.showComponentDialog(specifyMapPositionDialog, qsTr("Set Vehicle Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
+    }
+
+    Component {
+        id: specifyMapPositionDialog
+        EditPositionDialog {
+            coordinate:             activeVehicleCoordinate;
+            onCoordinateChanged:    {
+                activeVehicle.setStaticPosition(coordinate);
+                _fMap.centerMaponVehicle();
+            }
+        }
+
+    }
+
 
     function setStates() {
         QGroundControl.saveBoolGlobalSetting(_mainIsMapKey, mainIsMap)
@@ -734,8 +753,11 @@ Item {
                                 }
                             }
                         }
-                    }                   
-*/
+                    }
+                    */
+
+
+
                     QGCLabel {
                         text: qsTr("Servo 5:")
                         color: "white"
@@ -958,6 +980,15 @@ Item {
                                     activeVehicle.setServoValue(8, 2000);
                                 }
                             }
+                        }
+                    }
+                    QGCButton {
+                        text:              qsTr("Set Position")
+                        visible:           activeVehicle ? true : false
+                        Layout.columnSpan: 2
+                        Layout.alignment: Qt.AlignHCenter
+                        onClicked: {
+                            centerToSpecifiedLocation();
                         }
                     }
                     /*
