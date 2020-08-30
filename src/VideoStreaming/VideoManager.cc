@@ -288,12 +288,21 @@ VideoManager::_audioUdpPortChanged()
 
 #endif
     if (_activeVehicle)
-    {
-         _videoReceiver->setAudioUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+    {      
+        QString source = _videoSettings->videoSource()->rawValue().toString();
+        if (source == VideoSettings::videoSourceUDPH265StreamControl || source == VideoSettings::videoSourceUDPH264StreamControl)
+        {
+            qDebug() << "setting audio port to" << _videoSettings->audioUdpPort()->rawValue().toInt()+_activeVehicle->id();
+            _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()+_activeVehicle->id()));  //add vehicle id to raw value
+        }
+        else
+        {
+            _videoReceiver->setAudioUri(QStringLiteral("udp://%1:%2").arg(_activeVehicle->videoAddressPretty()).arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+        }
     }
     else
     {
-        _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));  //todo add setting for audio udp port
+        _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
     }
 }
 
@@ -515,7 +524,7 @@ VideoManager::_updateSettings()
     else if (source == VideoSettings::videoSourceUDPH265)
     {        
         _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
-        _videoReceiver->setAudioUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
+        _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
     }
     else if (source == VideoSettings::videoSourceUDPH265StreamControl)
     {
@@ -523,7 +532,7 @@ VideoManager::_updateSettings()
         if (_activeVehicle)
         {
             _videoReceiver->setUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt() + _activeVehicle->id()));
-            _videoReceiver->setAudioUri(QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt() + _activeVehicle->id()));
+            _videoReceiver->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt() + _activeVehicle->id()));
             qDebug() << "Video and Audio ports changed " << _videoSettings->udpPort()->rawValue().toInt() + _activeVehicle->id() << " and " << _videoSettings->audioUdpPort()->rawValue().toInt() + _activeVehicle->id();
         }
     }

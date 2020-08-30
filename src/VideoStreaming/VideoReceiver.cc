@@ -765,11 +765,6 @@ VideoReceiver::stop()
     }
 #if defined(QGC_GST_STREAMING)
 
-    //_stopAudio();  //causes crash
-
-    //try to stop audio different way
-
-
     _stop = true;
     qCDebug(VideoReceiverLog) << "Stopping";
     if(!_streaming) {
@@ -1011,6 +1006,7 @@ VideoReceiver::setVideoSink(GstElement* videoSink)
 //   we are adding these elements->  +->teepad-->queue-->_filesink |
 //                                        |                        |
 //                                        +------------------------+
+//  patrios: would like to add an additional teepad->queue->output
 #if defined(QGC_GST_STREAMING)
 GstElement*
 VideoReceiver::_makeFileSink(const QString& videoFile, unsigned format)
@@ -1094,6 +1090,42 @@ VideoReceiver::_makeFileSink(const QString& videoFile, unsigned format)
     return fileSink;
 }
 #endif
+
+void VideoReceiver::startTAKOut()
+{
+     qCDebug(VideoReceiverLog) << "Starting TAK output of stream";
+     if(_pipeline == nullptr) {
+         qCDebug(VideoReceiverLog) << "No pipeline!";
+         return;
+     }
+
+     _teepadTAK   = gst_element_get_request_pad(_tee, "src_%u");
+
+     if(!_teepadTAK) {
+         qCCritical(VideoReceiverLog) << "Failed to make teepadTAK element";
+         return;
+     }
+
+     //need a queue
+     _TAKQueue    = gst_element_factory_make("queue", "_TAKQueue");
+
+     gst_object_ref(_TAKQueue);
+     gst_bin_add(GST_BIN(_pipeline), _TAKQueue);
+     gst_element_sync_state_with_parent(_sink->queue);
+
+     _TAKQueueAppPad = gst_element_get_static_pad (_TAKQueue, "sink");
+
+
+
+      if (gst_pad_link (_teepadTAK, _TAKQueueAppPad) != GST_PAD_LINK_OK) {
+            qCDebug(VideoReceiverLog) << "Pad could not be linked!";
+      }
+      gst_object_unref (_TAKQueueAppPad);
+
+      //now use a udpsink to send it out multicast mpeg ts h.264
+
+
+}
 
 void
 VideoReceiver::startRecording(const QString &videoFile)

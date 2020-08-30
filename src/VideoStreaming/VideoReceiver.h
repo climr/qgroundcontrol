@@ -85,6 +85,7 @@ public slots:
     virtual void setAudioUri                (const QString& uri);
     virtual void stopRecording              ();
     virtual void startRecording             (const QString& videoFile = QString());
+    virtual void startTAKOut                ();
     virtual void startAudio                 ();
     virtual void stopAudio                  ();
 
@@ -143,6 +144,11 @@ protected:
     qint64          _lastFrameTime;
     GstElement*     _audioPipeline;
     GstElement*     _gstVolume;
+
+    //TAK output
+    GstPad*         _teepadTAK;
+    GstPad*         _TAKQueueAppPad;
+    GstElement*     _TAKQueue;
 
     //-- Wait for Video Server to show up before starting
     QTimer          _frameTimer;
