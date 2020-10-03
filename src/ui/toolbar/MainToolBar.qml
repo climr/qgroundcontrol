@@ -69,7 +69,7 @@ Item {
             // Toolbar Row
             RowLayout {
                 id:                 buttonRow
-                Layout.fillHeight:  true
+                Layout.fillHeight:  true         
                 spacing:            0
 
                 function clearAllChecks() {

@@ -21,9 +21,9 @@ import QGroundControl.Palette       1.0
 
 Rectangle {
     id:             root
-    width:          120//_outerRadius * 3//compass.width   + ScreenTools.defaultFontPixelWidth  * 3//getPreferredInstrumentWidth()
-    height:         120//_outerRadius * 3//compass.height   + ScreenTools.defaultFontPixelWidth  * 3//_outerRadius * 2
-    radius:         120
+    width:          160//_outerRadius * 3//compass.width   + ScreenTools.defaultFontPixelWidth  * 3//getPreferredInstrumentWidth()
+    height:         160//_outerRadius * 3//compass.height   + ScreenTools.defaultFontPixelWidth  * 3//_outerRadius * 2
+    radius:         160
     //radius:         _outerRadius
     //anchors.Margin:       ScreenTools.defaultFontPixelHeight * 2
     color:          qgcPal.window
@@ -64,7 +64,7 @@ Rectangle {
         //anchors.left:       attitude.right
        // anchors.left:       parent.right
         //size:               _innerRadius * 2
-        size: 120
+        size: 160
         vehicle:            activeVehicle
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter

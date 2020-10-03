@@ -689,6 +689,7 @@ public:
     Q_PROPERTY(Fact* headingToNextWP    READ headingToNextWP    CONSTANT)
     Q_PROPERTY(Fact* headingToHome      READ headingToHome      CONSTANT)
     Q_PROPERTY(Fact* distanceToGCS      READ distanceToGCS      CONSTANT)
+    Q_PROPERTY(Fact* bearingToGCS       READ bearingToGCS      CONSTANT)
     Q_PROPERTY(Fact* hobbs              READ hobbs              CONSTANT)
     Q_PROPERTY(Fact* throttlePct        READ throttlePct        CONSTANT)
 
@@ -1057,6 +1058,7 @@ public:
     Fact* headingToNextWP                   () { return &_headingToNextWPFact; }
     Fact* headingToHome                     () { return &_headingToHomeFact; }
     Fact* distanceToGCS                     () { return &_distanceToGCSFact; }
+    Fact* bearingToGCS                      () { return &_bearingToGCSFact; }
     Fact* hobbs                             () { return &_hobbsFact; }
     Fact* throttlePct                       () { return &_throttlePctFact; }
 
@@ -1669,6 +1671,7 @@ private:
     Fact _headingToNextWPFact;
     Fact _headingToHomeFact;
     Fact _distanceToGCSFact;
+    Fact _bearingToGCSFact;
     Fact _hobbsFact;
     Fact _throttlePctFact;
 
@@ -1702,6 +1705,7 @@ private:
     static const char* _headingToNextWPFactName;
     static const char* _headingToHomeFactName;
     static const char* _distanceToGCSFactName;
+    static const char* _bearingToGCSFactName;
     static const char* _hobbsFactName;
     static const char* _throttlePctFactName;
 

@@ -80,6 +80,7 @@ const char* Vehicle::_distanceToHomeFactName =      "distanceToHome";
 const char* Vehicle::_headingToNextWPFactName =     "headingToNextWP";
 const char* Vehicle::_headingToHomeFactName =       "headingToHome";
 const char* Vehicle::_distanceToGCSFactName =       "distanceToGCS";
+const char* Vehicle::_bearingToGCSFactName =        "bearingToGCS";
 const char* Vehicle::_hobbsFactName =               "hobbs";
 const char* Vehicle::_throttlePctFactName =         "throttlePct";
 
@@ -210,6 +211,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _headingToNextWPFact  (0, _headingToNextWPFactName,   FactMetaData::valueTypeDouble)
     , _headingToHomeFact    (0, _headingToHomeFactName,     FactMetaData::valueTypeDouble)
     , _distanceToGCSFact    (0, _distanceToGCSFactName,     FactMetaData::valueTypeDouble)
+    , _bearingToGCSFact     (0, _bearingToGCSFactName,       FactMetaData::valueTypeDouble)
     , _hobbsFact            (0, _hobbsFactName,             FactMetaData::valueTypeString)
     , _throttlePctFact      (0, _throttlePctFactName,       FactMetaData::valueTypeUint16)
     , _gpsFactGroup(this)
@@ -506,6 +508,7 @@ void Vehicle::_commonInit()
     _addFact(&_headingToNextWPFact,     _headingToNextWPFactName);
     _addFact(&_headingToHomeFact,       _headingToHomeFactName);
     _addFact(&_distanceToGCSFact,       _distanceToGCSFactName);
+    _addFact(&_bearingToGCSFact,        _bearingToGCSFactName);
     _addFact(&_throttlePctFact,         _throttlePctFactName);
 
     _hobbsFact.setRawValue(QVariant(QString("0000:00:00")));
@@ -4171,32 +4174,49 @@ void Vehicle::setGimbalPanValue(float value)
 
 void Vehicle::setLight(int c)
 {
-    int overtChannel = 5;
-    int irChannel = 6;
-    int servoLow = 900;
-    int servoHigh = 2000;
+
+    int ledChannel1 = 5;
+    int ledChannel2 = 6;
+    int irHigh = 2000;
+    int lightOff = 900;
+    int overtHigh = 1400;
+
 
     //get light info from params
-    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_OV_SER")) {
-        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_OV_SER");
-        overtChannel = (int)fact->rawValue().toInt();
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_1_SER")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_1_SER");
+        ledChannel1 = (int)fact->rawValue().toInt();
     }
 
-    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_IR_SER")) {
-        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_IR_SER");
-        irChannel = (int)fact->rawValue().toInt();
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_2_SER")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_2_SER");
+        ledChannel2 = (int)fact->rawValue().toInt();
         }
 
-    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_ON")) {
-        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_ON");
-        servoHigh = (int)fact->rawValue().toInt();
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_OVERT_ON")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_OVERT_ON");
+        overtHigh = (int)fact->rawValue().toInt();
         }
 
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_OFF")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_OFF");
-        servoLow = (int)fact->rawValue().toInt();
+        lightOff = (int)fact->rawValue().toInt();
         }
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_IR_ON")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_IR_ON");
+        irHigh = (int)fact->rawValue().toInt();
+        }
+
+
+
     //set light to the appropriate mode
+    // 0 = off
+    // 1 = overt on
+    // 2 = ir on
+
+
     _currentLight = c;
     emit currentLightChanged(c);
     //set pwm outputs to control lights
@@ -4206,8 +4226,8 @@ void Vehicle::setLight(int c)
             sendMavCommand(defaultComponentId(),
                            MAV_CMD_DO_SET_SERVO,
                            false,
-                           overtChannel,
-                           servoLow,
+                           ledChannel1,
+                           lightOff,
                            0,
                            0,
                            0,
@@ -4216,8 +4236,8 @@ void Vehicle::setLight(int c)
             sendMavCommand(defaultComponentId(),
                            MAV_CMD_DO_SET_SERVO,
                            false,
-                           irChannel,
-                           servoLow,
+                           ledChannel2,
+                           lightOff,
                            0,
                            0,
                            0,
@@ -4226,12 +4246,12 @@ void Vehicle::setLight(int c)
     }
     else if (c==1)
     {
-        //set overt on and ir off
+        //set overt on on both lights
         sendMavCommand(defaultComponentId(),
                        MAV_CMD_DO_SET_SERVO,
                        false,
-                       overtChannel,
-                       servoHigh,
+                       ledChannel1,
+                       overtHigh,
                        0,
                        0,
                        0,
@@ -4240,8 +4260,8 @@ void Vehicle::setLight(int c)
         sendMavCommand(defaultComponentId(),
                        MAV_CMD_DO_SET_SERVO,
                        false,
-                       irChannel,
-                       servoLow,
+                       ledChannel2,
+                       overtHigh,
                        0,
                        0,
                        0,
@@ -4254,8 +4274,8 @@ void Vehicle::setLight(int c)
         sendMavCommand(defaultComponentId(),
                        MAV_CMD_DO_SET_SERVO,
                        false,
-                       overtChannel,
-                       servoLow,
+                       ledChannel1,
+                       irHigh,
                        0,
                        0,
                        0,
@@ -4264,8 +4284,8 @@ void Vehicle::setLight(int c)
         sendMavCommand(defaultComponentId(),
                        MAV_CMD_DO_SET_SERVO,
                        false,
-                       irChannel,
-                       servoHigh,
+                       ledChannel2,
+                       irHigh,
                        0,
                        0,
                        0,
@@ -4376,8 +4396,19 @@ void Vehicle::setSlowSpeedMode(bool value)
     _slowspeedmode = value;
     int low_throttle;
     int high_throttle;
-    int low_speed_throw = 550;
-    int high_speed_throw = 250;
+    int low_speed_max = 2100;
+    int low_speed_min = 900;
+    int high_speed_max = 1800;
+    int high_speed_min = 1200;
+    int servo2Max = 2200;
+    int servo2Min;
+    int servo7Max;
+    int servo7Min;
+
+    //so now there are two new parameters
+    //HI_SPD_SERVO_MAX
+    //LO_SPD_SERVO_MAX
+    //these values represent the maximum servo throw allowed in high and slow speed
     if (value)
     {
         //slow, set throttle to value inticated
@@ -4390,6 +4421,50 @@ void Vehicle::setSlowSpeedMode(bool value)
         else
            return;
 
+        //get servo limits
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MAX_HI_SPD")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MAX_HI_SPD");
+            high_speed_max = (int)fact->rawValue().toInt();
+
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MAX_LO_SPD")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MAX_LO_SPD");
+            low_speed_max = (int)fact->rawValue().toInt();
+
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MIN_HI_SPD")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MIN_HI_SPD");
+            high_speed_min = (int)fact->rawValue().toInt();
+
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MIN_LO_SPD")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MIN_LO_SPD");
+            low_speed_min = (int)fact->rawValue().toInt();
+
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
+            servo2Max = (int)fact->rawValue().toInt();
+
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
+            servo2Min = (int)fact->rawValue().toInt();
+
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
+            servo7Max = (int)fact->rawValue().toInt();
+
+        }
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
+            servo7Min = (int)fact->rawValue().toInt();
+
+        }
+
+
+
        //set param indicating we are in slow speed
         if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SPEED_MODE")) {
           Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SPEED_MODE");
@@ -4397,40 +4472,44 @@ void Vehicle::setSlowSpeedMode(bool value)
         }
 
         if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "MOT_THR_MAX"))
-            {
+        {
             Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "MOT_THR_MAX");
             fact->setRawValue(QVariant(low_throttle));
 
-            //set steering servo trims to high for slow speed manuvering
+            //set steering servo trims for slow speed manuvering
             //amarok vehicle uses servo2 and servo7 for steering
-            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_TRIM")) {
-                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_TRIM");
-                int servo2_trim = (int)fact->rawValue().toInt();
+             int temp_speed_max = low_speed_max;
+             if (low_speed_max > servo2Max) temp_speed_max = servo2Max;  // honor the maximum servo throw of servo2
 
-                //set servo2 values
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
-                    fact->setRawValue(servo2_trim + low_speed_throw);  //work to pull these in from settings
-                }
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                    fact->setRawValue(servo2_trim - low_speed_throw);  //work to pull these in from settings
-                }
-            }
-            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_TRIM")) {
-                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_TRIM");
-                int servo7_trim = (int)fact->rawValue().toInt();
+             int temp_speed_min = low_speed_min;
+             if (low_speed_min < servo2Min) temp_speed_min = servo2Min;  // honor the minimum servo throw of servo2
 
-                //set servo7 values
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
-                    fact->setRawValue(servo7_trim + low_speed_throw);  //work to pull these in from settings
-                }
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
-                    fact->setRawValue(servo7_trim - low_speed_throw);  //work to pull these in from settings
-                }
+            //set servo2 values
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
+                fact->setRawValue(temp_speed_max);  //work to pull these in from settings
             }
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
+                fact->setRawValue(temp_speed_min);  //work to pull these in from settings
+            }
+
+            //set servo7 values
+            temp_speed_max = low_speed_max;
+            if (low_speed_max > servo7Max) temp_speed_max = servo7Max;  // honor the maximum servo throw of servo2
+
+            temp_speed_min = low_speed_min;
+            if (low_speed_min < servo7Min) temp_speed_min = servo7Min;  // honor the minimum servo throw of servo2
+
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
+                fact->setRawValue(temp_speed_max);  //work to pull these in from settings
+            }
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
+                fact->setRawValue(temp_speed_min);  //work to pull these in from settings
+            }
+
         }
 
     }
@@ -4457,6 +4536,12 @@ void Vehicle::setSlowSpeedMode(bool value)
 
             //set steering servo trims to low for high speed manuvering
             //get servo2 trim
+            int temp_speed_max = high_speed_max;
+            if (high_speed_max > servo2Max) temp_speed_max = servo2Max;  // honor the maximum servo throw of servo2
+
+            int temp_speed_min = high_speed_min;
+            if (high_speed_min < servo2Min) temp_speed_min = servo2Min;  // honor the minimum servo throw of servo2
+
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_TRIM")) {
                 Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_TRIM");
                 int servo2_trim = (int)fact->rawValue().toInt();
@@ -4464,13 +4549,20 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo2 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
-                    fact->setRawValue(servo2_trim + high_speed_throw);  //work to pull these in from settings
+                    fact->setRawValue(temp_speed_max);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                    fact->setRawValue(servo2_trim - high_speed_throw);  //work to pull these in from settings
+                    fact->setRawValue(temp_speed_min);  //work to pull these in from settings
                 }
             }
+
+            temp_speed_max = high_speed_max;
+            if (high_speed_max > servo7Max) temp_speed_max = servo2Max;  // honor the maximum servo throw of servo2
+
+            temp_speed_min = high_speed_min;
+            if (high_speed_min < servo7Min) temp_speed_min = servo2Min;  // honor the minimum servo throw of servo2
+
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_TRIM")) {
                 Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_TRIM");
                 int servo7_trim = (int)fact->rawValue().toInt();
@@ -4478,11 +4570,11 @@ void Vehicle::setSlowSpeedMode(bool value)
                 //set servo7 values
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
-                    fact->setRawValue(servo7_trim + high_speed_throw);  //work to pull these in from settings
+                    fact->setRawValue(temp_speed_max);  //work to pull these in from settings
                 }
                 if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
                     Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
-                    fact->setRawValue(servo7_trim - high_speed_throw);  //work to pull these in from settings
+                    fact->setRawValue(temp_speed_min);  //work to pull these in from settings
                 }
             }
         }
@@ -4608,9 +4700,14 @@ void Vehicle::_updateDistanceToGCS()
     QGeoCoordinate gcsPosition = _toolbox->qgcPositionManager()->gcsPosition();
     if (coordinate().isValid() && gcsPosition.isValid()) {
         _distanceToGCSFact.setRawValue(coordinate().distanceTo(gcsPosition));
+        _bearingToGCSFact.setRawValue(gcsPosition.azimuthTo(coordinate()));
     } else {
         _distanceToGCSFact.setRawValue(qQNaN());
+        _bearingToGCSFact.setRawValue(qQNaN());
+
     }
+
+
 }
 
 void Vehicle::_updateHobbsMeter()

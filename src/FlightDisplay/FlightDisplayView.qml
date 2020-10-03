@@ -515,6 +515,7 @@ Item {
         FlightDisplayViewWidgets {
             id:                 flightDisplayViewWidgets
             z:                  _mapAndVideo.z + 4
+            //height:             availableHeight - (singleMultiSelector.visible ? singleMultiSelector.height + _toolsMargin : 0) - _toolsMargin
             height:             availableHeight - (singleMultiSelector.visible ? singleMultiSelector.height + _toolsMargin : 0) - _toolsMargin
             anchors.left:       parent.left
             anchors.right:      altitudeSlider.visible ? altitudeSlider.left : parent.right
@@ -604,14 +605,13 @@ Item {
         //Nightcrawler/Patrios specific feedback panel
 
 
-
         Rectangle {
             id:                 patriosBox
             width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
             height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2
             radius: ScreenTools.defaultFontPixelHeight * 0.5
-            color:  Qt.rgba(0,0,0,0.5)
-            border.color:   qgcPal.text
+            color:  Qt.rgba(0,0,0,0.25)
+            border.color:   Qt.rgba(0,0,0,0.7) //qgcPal.text
             anchors.right:              parent.right
             anchors.bottom:             parent.bottom
             anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
@@ -642,6 +642,15 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     QGCLabel {
+                        text: qsTr("Position:")
+                        color: "white"
+                    }
+                    QGCLabel {
+                        text: activeVehicle.distanceToGCS.valueString + qsTr(" m ∠ ")+activeVehicle.bearingToGCS.valueString + qsTr(" \xB0")
+                        color: "white"
+                    }
+
+                    QGCLabel {
                         text: qsTr("Audio Enable:")
                         color: "white"
                         visible:  QGroundControl.videoManager.isGStreamer && _videoRunning && _audioEnabled
@@ -652,7 +661,7 @@ Item {
                       //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
                       //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
                       //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
-                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 3
                         width:                      height
                         z:                          _mapAndVideo.z + 5
                         visible:                    QGroundControl.videoManager.isGStreamer && _videoRunning && _audioEnabled
@@ -706,7 +715,7 @@ Item {
                       //  anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
                       //  anchors.rightMargin:        ScreenTools.defaultFontPixelHeight * 2
                       //  anchors.margins:            ScreenTools.defaultFontPixelHeight / 2
-                        height:                     ScreenTools.defaultFontPixelHeight * 2
+                        height:                     ScreenTools.defaultFontPixelHeight * 3
                         width:                      height
                         z:                          _mapAndVideo.z + 5
                         visible:                    QGroundControl.videoManager.isGStreamer && _videoRunning
@@ -748,7 +757,10 @@ Item {
                                 }
                             }
                         }
-                    }                   
+                    }
+
+
+
                     QGCLabel {
                         text: qsTr("Active Camera:")
                         color: "white"                    
