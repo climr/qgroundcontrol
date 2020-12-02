@@ -124,6 +124,7 @@ Item {
                     }
                 }
 
+
                 QGCToolBarButton {
                     id:                 flyButton
                     Layout.fillHeight:  true

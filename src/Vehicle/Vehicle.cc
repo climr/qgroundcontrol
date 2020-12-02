@@ -4084,35 +4084,51 @@ void Vehicle::setGimbalPanValue(float value)
     int servoValue = 1500;
     int gimbalSwing = 170;  //degrees the gimbal can swing
     int servoChannel = 3;  //default gimbal servo
+    bool vitalMissingParam = false;
 
-    //pull in values from fact manager
 
+    //pull in values from fact manager.. if these don't exist, don't even try to run the gimbal.
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_MID")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_MID");
         midpoint = (int)fact->rawValue().toInt();
     }
+    else
+            vitalMissingParam = true;
 
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_MAX")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_MAX");
         upperPoint = (int)fact->rawValue().toInt();
         }
+    else
+            vitalMissingParam = true;
 
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_MIN")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_MIN");
         lowerPoint = (int)fact->rawValue().toInt();
         }
+    else
+            vitalMissingParam = true;
 
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_SERVO")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_SERVO");
         servoChannel = (int)fact->rawValue().toInt();
         }
+    else
+            vitalMissingParam = true;
 
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "GIMBAL_RANGE")) {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "GIMBAL_RANGE");
         gimbalSwing = (int)fact->rawValue().toInt();
         }
+    else
+            vitalMissingParam = true;
 
 
+    if (vitalMissingParam==true)
+    {
+        qDebug() << "Missing Gimbal Parameters, not setting gimbal value. Check firmware version.";
+        return;
+    }
 
     if (value < 0)
     {

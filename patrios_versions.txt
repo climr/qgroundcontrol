@@ -1,0 +1,16 @@
+v1.0
+First release
+Supports Firmware Patrios_1.0
+Supports Horizon31 camera stream with source selection
+
+
+v1.1
+Second release
+Must be used with vehicle fimrware Patrios_1.1+, otherwise parameters will not be present
+Adds range/bearing to vehicle if the GCS has position
+Increases button size 
+Increases compass ring size
+
+
+
+
