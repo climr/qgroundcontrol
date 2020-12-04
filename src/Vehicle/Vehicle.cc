@@ -4417,9 +4417,9 @@ void Vehicle::setSlowSpeedMode(bool value)
     int high_speed_max = 1800;
     int high_speed_min = 1200;
     int servo2Max = 2200;
-    int servo2Min;
-    int servo7Max;
-    int servo7Min;
+    int servo2Min = 900;
+    int servo7Max = 2200;
+    int servo7Min = 900;
 
     //so now there are two new parameters
     //HI_SPD_SERVO_MAX
@@ -4438,23 +4438,23 @@ void Vehicle::setSlowSpeedMode(bool value)
            return;
 
         //get servo limits
-        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MAX_HI_SPD")) {
-            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MAX_HI_SPD");
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "HI_SPD_SERVO_MAX")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "HI_SPD_SERVO_MAX");
             high_speed_max = (int)fact->rawValue().toInt();
 
         }
-        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MAX_LO_SPD")) {
-            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MAX_LO_SPD");
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LO_SPD_SERVO_MAX")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LO_SPD_SERVO_MAX");
             low_speed_max = (int)fact->rawValue().toInt();
 
         }
-        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MIN_HI_SPD")) {
-            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MIN_HI_SPD");
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "HI_SPD_SERVO_MIN")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "HI_SPD_SERVO_MIN");
             high_speed_min = (int)fact->rawValue().toInt();
 
         }
-        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO_MIN_LO_SPD")) {
-            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO_MIN_LO_SPD");
+        if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LO_SPD_SERVO_MIN")) {
+            Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LO_SPD_SERVO_MIN");
             low_speed_min = (int)fact->rawValue().toInt();
 
         }
@@ -4494,36 +4494,25 @@ void Vehicle::setSlowSpeedMode(bool value)
 
             //set steering servo trims for slow speed manuvering
             //amarok vehicle uses servo2 and servo7 for steering
-             int temp_speed_max = low_speed_max;
-             if (low_speed_max > servo2Max) temp_speed_max = servo2Max;  // honor the maximum servo throw of servo2
-
-             int temp_speed_min = low_speed_min;
-             if (low_speed_min < servo2Min) temp_speed_min = servo2Min;  // honor the minimum servo throw of servo2
 
             //set servo2 values
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
                 Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
-                fact->setRawValue(temp_speed_max);  //work to pull these in from settings
+                fact->setRawValue(low_speed_max);  //work to pull these in from settings
             }
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
                 Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                fact->setRawValue(temp_speed_min);  //work to pull these in from settings
+                fact->setRawValue(low_speed_min);  //work to pull these in from settings
             }
 
-            //set servo7 values
-            temp_speed_max = low_speed_max;
-            if (low_speed_max > servo7Max) temp_speed_max = servo7Max;  // honor the maximum servo throw of servo2
-
-            temp_speed_min = low_speed_min;
-            if (low_speed_min < servo7Min) temp_speed_min = servo7Min;  // honor the minimum servo throw of servo2
 
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
                 Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
-                fact->setRawValue(temp_speed_max);  //work to pull these in from settings
+                fact->setRawValue(low_speed_max);  //work to pull these in from settings
             }
             if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
                 Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
-                fact->setRawValue(temp_speed_min);  //work to pull these in from settings
+                fact->setRawValue(low_speed_min);  //work to pull these in from settings
             }
 
         }
@@ -4550,48 +4539,25 @@ void Vehicle::setSlowSpeedMode(bool value)
             Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "MOT_THR_MAX");
             fact->setRawValue(QVariant(high_throttle));
 
-            //set steering servo trims to low for high speed manuvering
-            //get servo2 trim
-            int temp_speed_max = high_speed_max;
-            if (high_speed_max > servo2Max) temp_speed_max = servo2Max;  // honor the maximum servo throw of servo2
-
-            int temp_speed_min = high_speed_min;
-            if (high_speed_min < servo2Min) temp_speed_min = servo2Min;  // honor the minimum servo throw of servo2
-
-            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_TRIM")) {
-                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_TRIM");
-                int servo2_trim = (int)fact->rawValue().toInt();
-
-                //set servo2 values
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
-                    fact->setRawValue(temp_speed_max);  //work to pull these in from settings
-                }
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
-                    fact->setRawValue(temp_speed_min);  //work to pull these in from settings
-                }
+            //set steering servo trims to low for high speed manuvering                    
+            //set servo2 values
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MAX")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MAX");
+                fact->setRawValue(high_speed_max);  //work to pull these in from settings
+            }
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO2_MIN")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO2_MIN");
+                fact->setRawValue(high_speed_min);  //work to pull these in from settings
             }
 
-            temp_speed_max = high_speed_max;
-            if (high_speed_max > servo7Max) temp_speed_max = servo2Max;  // honor the maximum servo throw of servo2
-
-            temp_speed_min = high_speed_min;
-            if (high_speed_min < servo7Min) temp_speed_min = servo2Min;  // honor the minimum servo throw of servo2
-
-            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_TRIM")) {
-                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_TRIM");
-                int servo7_trim = (int)fact->rawValue().toInt();
-
-                //set servo7 values
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
-                    fact->setRawValue(temp_speed_max);  //work to pull these in from settings
-                }
-                if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
-                    Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
-                    fact->setRawValue(temp_speed_min);  //work to pull these in from settings
-                }
+            //set servo7 values
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MAX")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MAX");
+                fact->setRawValue(high_speed_max);  //work to pull these in from settings
+            }
+            if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "SERVO7_MIN")) {
+                Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "SERVO7_MIN");
+                fact->setRawValue(high_speed_min);  //work to pull these in from settings
             }
         }
     }

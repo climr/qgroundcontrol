@@ -25,6 +25,20 @@
     <field name="UnitText">percentage</field>
 </param>
 
+<param humanName="Amarok Low Speed Servo Max" name="APMrover2:LO_SPD_SERVO_MAX" documentation="Maximum servo throw allowed when in slow mode" user="Amarok">
+    <field name="Range">900 2200</field>
+    <field name="Increment">1</field>
+    <field name="Units">PWM</field>
+    <field name="UnitText">pwm in microseconds</field>
+</param>
+
+<param humanName="Amarok High Speed Servo Max" name="APMrover2:HI_SPD_SERVO_MAX" documentation="Maximum servo throw allowed when in fast mode" user="Amarok">
+    <field name="Range">900 2200</field>
+    <field name="Increment">1</field>
+    <field name="Units">PWM</field>
+    <field name="UnitText">pwm in microseconds</field>
+</param>
+
 <param humanName="Amarok Gimbal Servo" name="APMrover2:GIMBAL_SERVO" documentation="This is the channel is used for the Amarok servo" user="Amarok"> 
     <value code="3">Servo 3</value>
     <value code="4">Servo 4</value>
@@ -97,14 +111,14 @@
     <value code="15">Servo 15</value>
 </param>
 
-<param humanName="Amarok Overt Lights Servo ON Point" name="APMrover2:LIGHT_OVERT_ON" documentation="This value is the PWM value used to turn ON the Amarok overt lights" user="Amarok">
+<param humanName="Amarok Overt Lights Servo ON Point" name="APMrover2:OVERT_LIGHT_ON" documentation="This value is the PWM value used to turn ON the Amarok overt lights" user="Amarok">
     <field name="Range">800 2200</field>
     <field name="Increment">1</field>
     <field name="Units">PWM</field>
     <field name="UnitText">pwm in microseconds</field>
 </param>
 
-<param humanName="Amarok IR Lights Servo ON Point" name="APMrover2:LIGHT_IR_ON" documentation="This value is the PWM value used to turn ON the Amarok IR lights" user="Amarok">
+<param humanName="Amarok IR Lights Servo ON Point" name="APMrover2:IR_LIGHT_ON" documentation="This value is the PWM value used to turn ON the Amarok IR lights" user="Amarok">
     <field name="Range">800 2200</field>
     <field name="Increment">1</field>
     <field name="Units">PWM</field>
@@ -153,28 +167,28 @@
     <field name="UnitText">degrees</field>
 </param>
 
-<param humanName="Amarok High Speed Servo Max Range Limit" name="APMrover2:SERVO_MAX_HI_SPD" documentation="The steering servo maximum used when the vehicle is in high speed mode" user="Amarok">
+<param humanName="Amarok High Speed Servo Max Range Limit" name="APMrover2:HI_SPD_SERVO_MAX" documentation="The steering servo maximum used when the vehicle is in high speed mode" user="Amarok">
     <field name="Range">800 2200</field>
     <field name="Increment">1</field>
     <field name="Units">PWM</field>
     <field name="UnitText">pwm in microseconds</field>
 </param>
 
-<param humanName="Amarok High Speed Servo Min Range Limit" name="APMrover2:SERVO_MIN_HI_SPD" documentation="The steering servo minimum used when the vehicle is in high speed mode" user="Amarok">
+<param humanName="Amarok High Speed Servo Min Range Limit" name="APMrover2:HI_SPD_SERVO_MIN" documentation="The steering servo minimum used when the vehicle is in high speed mode" user="Amarok">
     <field name="Range">800 2200</field>
     <field name="Increment">1</field>
     <field name="Units">PWM</field>
     <field name="UnitText">pwm in microseconds</field>
 </param>
 
-<param humanName="Amarok Low Speed Servo Max Range Limit" name="APMrover2:SERVO_MAX_LO_SPD" documentation="The steering servo maximum used when the vehicle is in slow speed mode" user="Amarok">
+<param humanName="Amarok Low Speed Servo Max Range Limit" name="APMrover2:LO_SPD_SERVO_MAX" documentation="The steering servo maximum used when the vehicle is in slow speed mode" user="Amarok">
     <field name="Range">800 2200</field>
     <field name="Increment">1</field>
     <field name="Units">PWM</field>
     <field name="UnitText">pwm in microseconds</field>
 </param>
 
-<param humanName="Amarok Low Speed Servo Min Range Limit" name="APMrover2:SERVO_MIN_LO_SPD" documentation="The steering servo minimum used when the vehicle is in slow speed mode" user="Amarok">
+<param humanName="Amarok Low Speed Servo Min Range Limit" name="APMrover2:LO_SPD_SERVO_MIN" documentation="The steering servo minimum used when the vehicle is in slow speed mode" user="Amarok">
     <field name="Range">800 2200</field>
     <field name="Increment">1</field>
     <field name="Units">PWM</field>
