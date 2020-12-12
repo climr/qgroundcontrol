@@ -115,13 +115,21 @@ ParameterManager::ParameterManager(Vehicle* vehicle)
 
     if (_vehicle->highLatencyLink()) {
         // High latency links don't load parameters
+
         _parametersReady = true;
         _missingParameters = true;
         _initialLoadComplete = true;
         _waitingForDefaultComponent = false;
         emit parametersReadyChanged(_parametersReady);
         emit missingParametersChanged(_missingParameters);
-    } else if (!_logReplay){
+    }
+    else if (_vehicle->availability() == false)
+    {
+        //also dont load parameters yet because we don't know if the vehicle is available.
+        //when the vehicle gets confirmation of control, it'll request a param load
+        _parametersReady = false;
+    }
+    else if (!_logReplay){
         refreshAllParameters();
     }
 }

@@ -1,4 +1,4 @@
-/****************************************************************************
+ /****************************************************************************
  *
  * (c) 2009-2020 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
@@ -301,11 +301,22 @@ void MultiVehicleManager::_setActiveVehiclePhase2(void)
     _activeVehicle = _vehicleBeingSetActive;
     emit activeVehicleChanged(_activeVehicle);
 
+
+
     // And finally vehicle availability
     if (_activeVehicle) {
         _activeVehicle->setActive(true);
         _activeVehicleAvailable = true;
         emit activeVehicleAvailableChanged(true);
+
+//if this is happening as part of a new vehicle detection, the system has already sent a changeoperator request and we likely have the response by now
+//if this is happening as the user is switching from one vehicle to another then we need to request control
+//if we have never had control, or if the vehicle has declined control then the params will not be ready
+//if the vehicle was available (in the background) then params may have been loaded
+
+        _activeVehicle->requestControl(true);  //send the operator_change_request
+
+
 
         if (_activeVehicle->parameterManager()->parametersReady()) {
             _parameterReadyVehicleAvailable = true;

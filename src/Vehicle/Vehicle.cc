@@ -57,6 +57,7 @@ QGC_LOGGING_CATEGORY(VehicleLog, "VehicleLog")
 #define DEFAULT_LON -120.083923f
 
 const QString guided_mode_not_supported_by_vehicle = QObject::tr("Guided mode not supported by Vehicle.");
+const QString vehicle_not_avaialable = QObject::tr("Vehicle is being used by another GCS.");
 
 const char* Vehicle::_settingsGroup =               "Vehicle%1";        // %1 replaced with mavlink system id
 const char* Vehicle::_joystickModeSettingsKey =     "JoystickMode";
@@ -135,6 +136,8 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _flying(false)
     , _landing(false)
     , _vtolInFwdFlight(false)
+    , _availability(false)
+    , _unavailable_count(0)
     , _onboardControlSensorsPresent(0)
     , _onboardControlSensorsEnabled(0)
     , _onboardControlSensorsHealth(0)
@@ -222,7 +225,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _temperatureFactGroup(this)
     , _clockFactGroup(this)
     , _distanceSensorFactGroup(this)
-    , _estimatorStatusFactGroup(this)
+    , _estimatorStatusFactGroup(this)    
 {
     connect(_joystickManager, &JoystickManager::activeJoystickChanged, this, &Vehicle::_loadSettings);
     connect(qgcApp()->toolbox()->multiVehicleManager(), &MultiVehicleManager::activeVehicleAvailableChanged, this, &Vehicle::_loadSettings);
@@ -263,7 +266,15 @@ Vehicle::Vehicle(LinkInterface*             link,
     _streamControlTimer.setInterval(1000);
     _streamControlTimer.setSingleShot(false);
     connect(&_streamControlTimer, &QTimer::timeout, this, &Vehicle::_sendCurrentCameraPosition);
-    //don't start this timer until the vehicle is active
+
+    // request vehicle control
+    requestControl(true);
+
+    //start a periodic timer that will request vehicle control when the vehicle is active and we think it is unavailable
+    _availabilityControlTimer.setInterval(1000);
+    _availabilityControlTimer.setSingleShot(false);
+    connect(&_availabilityControlTimer, &QTimer::timeout, this, &Vehicle::_checkAndTryAvailability);
+    // vehicle control timer, which should request control if control is available is currently false and the vehicle is active
 
     _mav = uas();
 
@@ -740,6 +751,9 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
     }
 
     switch (message.msgid) {
+    case MAVLINK_MSG_ID_CHANGE_OPERATOR_CONTROL_ACK:
+        _handleOperatorControl(message);
+        break;
     case MAVLINK_MSG_ID_HOME_POSITION:
         _handleHomePosition(message);
         break;
@@ -1716,6 +1730,44 @@ void Vehicle::_setHomePosition(QGeoCoordinate& homeCoord)
     }
 }
 
+void Vehicle::_setAvailability(bool availability)
+{
+    if (availability != _availability)
+    {
+        _availability = availability;
+        emit availabilityChanged(_availability);
+
+        if (_availability && !parameterManager()->parametersReady())  //if vehicle went from unavailable to available, and we should params NOT ready, do a refresh
+        {
+            parameterManager()->refreshAllParameters();
+        }
+    }
+}
+
+
+void Vehicle::_handleOperatorControl(mavlink_message_t& message)
+{
+    mavlink_change_operator_control_ack_t changeAck;
+
+    mavlink_msg_change_operator_control_ack_decode(&message, &changeAck);
+    if (changeAck.ack == 0 && changeAck.control_request == 0) //if we requested control and control is granted
+    {
+        _setAvailability(true);  //control is available
+        _unavailable_count = 0;
+    }
+    else if (changeAck.control_request == 0)
+    {
+        //show the unavailable message every so often
+        if ((_unavailable_count++ % 20) == 0)
+            qgcApp()->showMessage(vehicle_not_avaialable);
+
+        _setAvailability(false);  //we requested control, but were denied
+
+    }
+
+
+}
+
 void Vehicle::_handleHomePosition(mavlink_message_t& message)
 {
     mavlink_home_position_t homePos;
@@ -2430,6 +2482,13 @@ void Vehicle::setActive(bool active)
         _startJoystick(false);
         emit activeChanged(_active);
 
+        if (!active)
+        {
+            //no longer the active vehicle, so release control
+            requestControl(false);
+            _availability = false;
+        }
+
         //control the stream control timer
         if (active && (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl))
             _streamControlTimer.start();
@@ -2450,6 +2509,27 @@ void Vehicle::setArmed(bool armed)
                    MAV_CMD_COMPONENT_ARM_DISARM,
                    true,    // show error if fails
                    armed ? 1.0f : 0.0f);
+}
+
+void Vehicle::requestControl(bool control)
+{
+    //this sends a change_operator_control request to the vehicle
+    //response should indicate if control is granted or denied
+    char passkey[25];
+    uint8_t control_request = (control)? 1:0;
+    mavlink_message_t msg;
+    mavlink_msg_change_operator_control_pack(_mavlink->getSystemId(),
+                                             _mavlink->getComponentId(),
+                                             &msg,
+                                             _mavlink->getSystemId(),
+                                             control_request,
+                                             0,
+                                             passkey
+                                             );
+
+
+    sendMessageOnLink(priorityLink(), msg);
+
 }
 
 bool Vehicle::flightModeSetAvailable()
@@ -3558,6 +3638,7 @@ void Vehicle::_handleCommandAck(mavlink_message_t& message)
 
     qCDebug(VehicleLog) << QStringLiteral("_handleCommandAck command(%1) result(%2)").arg(ack.command).arg(ack.result);
 
+
     if (ack.command == MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES && ack.result != MAV_RESULT_ACCEPTED) {
         qCDebug(VehicleLog) << QStringLiteral("Vehicle responded to MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES with error(%1). Setting no capabilities.").arg(ack.result);
         _handleUnsupportedRequestAutopilotCapabilities();
@@ -4339,6 +4420,13 @@ void Vehicle::_setCameraPosition(int c)
     if (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl)
         _streamControlTimer.start();
 
+}
+
+void Vehicle::_checkAndTryAvailability()
+{
+    //this is called periodically when the vehicle is active
+    if (_active && !_availability)
+        requestControl(true);
 }
 void Vehicle::_sendCurrentCameraPosition()
 {

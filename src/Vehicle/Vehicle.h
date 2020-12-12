@@ -547,6 +547,7 @@ public:
     Q_PROPERTY(AutoPilotPlugin*     autopilot               MEMBER _autopilotPlugin                                     CONSTANT)
     Q_PROPERTY(QGeoCoordinate       coordinate              READ coordinate                                             NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate       homePosition            READ homePosition                                           NOTIFY homePositionChanged)
+    Q_PROPERTY(bool                 availability            READ availability                                           NOTIFY availabilityChanged)
     Q_PROPERTY(QGeoCoordinate       armedPosition           READ armedPosition                                          NOTIFY armedPositionChanged)
     Q_PROPERTY(bool                 armed                   READ armed                  WRITE setArmed                  NOTIFY armedChanged)
     Q_PROPERTY(bool                 autoDisarm              READ autoDisarm                                             NOTIFY autoDisarmChanged)
@@ -918,7 +919,7 @@ public:
     RallyPointManager*  rallyPointManager() { return _rallyPointManager; }
 
     QGeoCoordinate homePosition();
-
+    bool availability () { return _availability; }
     bool armed      () { return _armed; }
     bool weaponsArmed      () { return _weaponsArmed; }
     bool weaponsPreArmed    () { return _weaponsPreArmed; }
@@ -926,6 +927,7 @@ public:
     bool slowSpeedMode  () { return _slowspeedmode;}
     bool fourWheelSteering       () { return _fourwheelsteering; }
     void setArmed   (bool armed);
+    void requestControl (bool control);
 
     bool flightModeSetAvailable             ();
     QStringList flightModes                 ();
@@ -1177,6 +1179,7 @@ public:
     void _setFlying(bool flying);
     void _setLanding(bool landing);
     void _setHomePosition(QGeoCoordinate& homeCoord);
+    void _setAvailability(bool availabilty);  //is the vehicle available to control?
     void _setMaxProtoVersion(unsigned version);
     void _setMaxProtoVersionFromBothSources();
 
@@ -1208,6 +1211,7 @@ signals:
     void activeChanged                  (bool active);
     void mavlinkMessageReceived         (const mavlink_message_t& message);
     void homePositionChanged            (const QGeoCoordinate& homePosition);
+    void availabilityChanged            (bool availability);
     void armedPositionChanged();
     void armedChanged                   (bool armed);
     void flightModeChanged              (const QString& flightMode);
@@ -1370,6 +1374,7 @@ private:
     void _saveSettings                  ();
     void _startJoystick                 (bool start);
     void _handlePing                    (LinkInterface* link, mavlink_message_t& message);
+    void _handleOperatorControl         (mavlink_message_t& message);
     void _handleHomePosition            (mavlink_message_t& message);
     void _handleHeartbeat               (mavlink_message_t& message);
     void _handleRadioStatus             (mavlink_message_t& message);
@@ -1413,6 +1418,7 @@ private:
     void _handleADSBVehicle             (const mavlink_message_t& message);
     void _setCameraPosition             (int value);
     void _sendCurrentCameraPosition     ();
+    void _checkAndTryAvailability       ();
     void _videoSettingsChanged          ();
     void _missionManagerError           (int errorCode, const QString& errorMsg);
     void _geoFenceManagerError          (int errorCode, const QString& errorMsg);
@@ -1487,6 +1493,8 @@ private:
     bool            _flying;
     bool            _landing;
     bool            _vtolInFwdFlight;
+    bool            _availability;   ///<true: The vehicle is available to control
+    uint32_t        _unavailable_count;
     uint32_t        _onboardControlSensorsPresent;
     uint32_t        _onboardControlSensorsEnabled;
     uint32_t        _onboardControlSensorsHealth;
@@ -1525,6 +1533,7 @@ private:
     QList<MavCommandQueueEntry_t>   _mavCommandQueue;
     QTimer                          _mavCommandAckTimer;
     QTimer                          _streamControlTimer;
+    QTimer                          _availabilityControlTimer;
     int                             _mavCommandRetryCount;
     int                             _capabilitiesRetryCount =               0;
     QTime                           _capabilitiesRetryElapsed;
