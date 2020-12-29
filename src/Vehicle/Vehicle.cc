@@ -1737,7 +1737,7 @@ void Vehicle::_setAvailability(bool availability)
         _availability = availability;
         emit availabilityChanged(_availability);
 
-        if (_availability && !parameterManager()->parametersReady())  //if vehicle went from unavailable to available, and we should params NOT ready, do a refresh
+        if (_availability && !parameterManager()->parametersReady())  //if vehicle went from unavailable to available, and params NOT ready, do a refresh
         {
             parameterManager()->refreshAllParameters();
         }
