@@ -55,6 +55,7 @@ ApplicationWindow {
     property var                activeVehicle:              QGroundControl.multiVehicleManager.activeVehicle
     /// Indicates communication with vehicle is list (no heartbeats)
     property bool               communicationLost:          activeVehicle ? activeVehicle.connectionLost : false
+    property bool               vehicleAvailability:        activeVehicle ? activeVehicle.availability: false
     property string             formatedMessage:            activeVehicle ? activeVehicle.formatedMessage : ""
     /// Indicates usable height between toolbar and footer
     property real               availableHeight:            mainWindow.height - mainWindow.header.height - mainWindow.footer.height

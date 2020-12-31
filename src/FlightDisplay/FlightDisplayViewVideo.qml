@@ -42,7 +42,15 @@ Item {
         color:          Qt.rgba(0,0,0,0.75)
         visible:        !(_videoReceiver && _videoReceiver.videoRunning)
         QGCLabel {
-            text:               QGroundControl.settingsManager.videoSettings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
+            text:   getVideoText()
+            function getVideoText() {
+                if (activeVehicle && communicationLost)
+                    return QGroundControl.settingsManager.videoSettings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
+                else if (!activeVehicle.vehicleAvailability)
+                    return qsTr("VEHICLE IS IN USE BY ANOTHER GCS. WAITING FOR RELEASE...")
+                else
+                    return QGroundControl.settingsManager.videoSettings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
+            }
             font.family:        ScreenTools.demiboldFontFamily
             color:              "white"
             font.pointSize:     mainIsMap ? ScreenTools.smallFontPointSize : ScreenTools.largeFontPointSize

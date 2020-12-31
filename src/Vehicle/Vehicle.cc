@@ -274,6 +274,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     _availabilityControlTimer.setInterval(1000);
     _availabilityControlTimer.setSingleShot(false);
     connect(&_availabilityControlTimer, &QTimer::timeout, this, &Vehicle::_checkAndTryAvailability);
+    _availabilityControlTimer.start();
     // vehicle control timer, which should request control if control is available is currently false and the vehicle is active
 
     _mav = uas();
@@ -864,6 +865,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         break;
     case MAVLINK_MSG_ID_STATUSTEXT:
         _handleStatusText(message, false /* longVersion */);
+        qDebug() << "got status text";
         break;
     case MAVLINK_MSG_ID_STATUSTEXT_LONG:
         _handleStatusText(message, true /* longVersion */);
@@ -1734,8 +1736,12 @@ void Vehicle::_setAvailability(bool availability)
 {
     if (availability != _availability)
     {
+        qDebug()<<"setting _availability to " << availability;
         _availability = availability;
         emit availabilityChanged(_availability);
+
+        if (_availability) //if availabiliity just just changed to true, reset the link metrics
+            _toolbox->mavlinkProtocol()->resetMetadataForLink(priorityLink());
 
         if (_availability && !parameterManager()->parametersReady())  //if vehicle went from unavailable to available, and params NOT ready, do a refresh
         {
@@ -1748,18 +1754,20 @@ void Vehicle::_setAvailability(bool availability)
 void Vehicle::_handleOperatorControl(mavlink_message_t& message)
 {
     mavlink_change_operator_control_ack_t changeAck;
-
+    qDebug()<<"Got Change Operator Control ACK";
     mavlink_msg_change_operator_control_ack_decode(&message, &changeAck);
     if (changeAck.ack == 0 && changeAck.control_request == 0) //if we requested control and control is granted
     {
+        qDebug()<<"Change Operator Control ACK indicates control is available";
         _setAvailability(true);  //control is available
         _unavailable_count = 0;
     }
     else if (changeAck.control_request == 0)
     {
+        qDebug()<<"Change Operator Control ACK indicates control is NOT available";
         //show the unavailable message every so often
         if ((_unavailable_count++ % 20) == 0)
-            qgcApp()->showMessage(vehicle_not_avaialable);
+            //qgcApp()->showMessage(vehicle_not_avaialable);
 
         _setAvailability(false);  //we requested control, but were denied
 
@@ -2516,12 +2524,12 @@ void Vehicle::requestControl(bool control)
     //this sends a change_operator_control request to the vehicle
     //response should indicate if control is granted or denied
     char passkey[25];
-    uint8_t control_request = (control)? 1:0;
+    uint8_t control_request = (control)? 0:1;
     mavlink_message_t msg;
     mavlink_msg_change_operator_control_pack(_mavlink->getSystemId(),
                                              _mavlink->getComponentId(),
                                              &msg,
-                                             _mavlink->getSystemId(),
+                                             id(),
                                              control_request,
                                              0,
                                              passkey
@@ -2529,6 +2537,8 @@ void Vehicle::requestControl(bool control)
 
 
     sendMessageOnLink(priorityLink(), msg);
+
+    qDebug()<<"Sending Change Operator Control";
 
 }
 
@@ -2907,6 +2917,7 @@ void Vehicle::_sendQGCTimeToVehicle()
 void Vehicle::disconnectInactiveVehicle()
 {
     // Vehicle is no longer communicating with us, disconnect all links
+    qDebug() << "disconnected vehicle or lost comms";
 
     LinkManager* linkMgr = _toolbox->linkManager();
     for (int i=0; i<_links.count(); i++) {
@@ -3014,6 +3025,7 @@ void Vehicle::_linkActiveChanged(LinkInterface *link, bool active, int vehicleID
                 communicationLost = true;
                 _heardFrom = false;
                 emit connectionLostChanged(true);
+                _setAvailability(false);  // reset the availablility status since we have lost connection
 
                 if (_autoDisconnect) {
                     // Reset link state
@@ -4425,8 +4437,14 @@ void Vehicle::_setCameraPosition(int c)
 void Vehicle::_checkAndTryAvailability()
 {
     //this is called periodically when the vehicle is active
+
     if (_active && !_availability)
+    {
+        qDebug()<<"vehicle is active but not available, request control";
         requestControl(true);
+    }
+    else
+        qDebug()<<"Not requesting control because vehicle is not active or already available";
 }
 void Vehicle::_sendCurrentCameraPosition()
 {
@@ -4435,7 +4453,7 @@ void Vehicle::_sendCurrentCameraPosition()
     else if (_currentCamera==1)  cam = MAV_COMP_ID_CAMERA2;
     else cam = MAV_COMP_ID_CAMERA3;
 
-    qDebug() << "Sending periodic camera message, sysid = " << _id << " camera = " << _currentCamera;
+    //qDebug() << "Sending periodic camera message, sysid = " << _id << " camera = " << _currentCamera;
 
     //sending this as a individual message since we don't care about acks and retries for this
     mavlink_message_t msg;

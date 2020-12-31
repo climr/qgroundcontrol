@@ -224,7 +224,7 @@ Item {
         anchors.top:            parent.top
         anchors.bottom:         parent.bottom
         anchors.margins:        ScreenTools.defaultFontPixelHeight * 0.66
-        visible:                activeVehicle && !communicationLost && x > (toolbarRow.x + toolbarRow.width + ScreenTools.defaultFontPixelWidth)
+        visible:                activeVehicle && vehicleAvailability && !communicationLost && x > (toolbarRow.x + toolbarRow.width + ScreenTools.defaultFontPixelWidth)
         //visible:                activeVehicle && x > (toolbarRow.x + toolbarRow.width + ScreenTools.defaultFontPixelWidth)
         fillMode:               Image.PreserveAspectFit
         source:                 _outdoorPalette ? "/qmlimages/amarok_outdoor_brand.png" : "/qmlimages/amarok_indoor_brand.png"  //_brandImageOutdoor : _brandImageIndoor
@@ -352,6 +352,25 @@ Item {
             font.pointSize:         ScreenTools.largeFontPointSize
             font.family:            ScreenTools.demiboldFontFamily
             color:                  qgcPal.colorRed
+        }
+    }
+    Row {
+        anchors.rightMargin:    ScreenTools.defaultFontPixelWidth
+        anchors.top:            parent.top
+        anchors.bottom:         parent.bottom
+        anchors.right:          parent.right
+        layoutDirection:        Qt.RightToLeft
+        spacing:                ScreenTools.defaultFontPixelWidth
+        visible:                activeVehicle && !vehicleAvailability && !communicationLost
+
+
+        QGCLabel {
+            id:                     availability
+            anchors.verticalCenter: parent.verticalCenter
+            text:                   qsTr("VEHICLE NOT AVAILABLE")
+            font.pointSize:         ScreenTools.largeFontPointSize
+            font.family:            ScreenTools.demiboldFontFamily
+            color:                  qgcPal.colorOrange
         }
     }
 
