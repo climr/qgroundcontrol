@@ -271,7 +271,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     requestControl(true);
 
     //start a periodic timer that will request vehicle control when the vehicle is active and we think it is unavailable
-    _availabilityControlTimer.setInterval(1000);
+    _availabilityControlTimer.setInterval(2000);
     _availabilityControlTimer.setSingleShot(false);
     connect(&_availabilityControlTimer, &QTimer::timeout, this, &Vehicle::_checkAndTryAvailability);
     _availabilityControlTimer.start();
@@ -2538,7 +2538,7 @@ void Vehicle::requestControl(bool control)
 
     sendMessageOnLink(priorityLink(), msg);
 
-    qDebug()<<"Sending Change Operator Control";
+    //qDebug()<<"Sending Change Operator Control";
 
 }
 
@@ -4219,7 +4219,7 @@ void Vehicle::setGimbalPanValue(float value)
 
     if (vitalMissingParam==true)
     {
-        qDebug() << "Missing Gimbal Parameters, not setting gimbal value. Check firmware version.";
+        //qDebug() << "Missing Gimbal Parameters, not setting gimbal value. Check firmware version.";
         return;
     }
 
@@ -4240,7 +4240,7 @@ void Vehicle::setGimbalPanValue(float value)
     if (!_centeredGimbal)
     {
         mavlink_message_t msg;
-        mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+       mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
                                            _mavlink->getComponentId(),
                                            priorityLink()->mavlinkChannel(),
                                            &msg,
@@ -4289,6 +4289,9 @@ void Vehicle::setLight(int c)
     int irHigh = 2000;
     int lightOff = 900;
     int overtHigh = 1400;
+    int _lightcontrolMode;
+
+    _lightcontrolMode = _toolbox->settingsManager()->appSettings()->lightControlMode()->rawValue().toUInt();
 
 
     //get light info from params
@@ -4319,19 +4322,15 @@ void Vehicle::setLight(int c)
         }
 
 
-
     //set light to the appropriate mode
-    // 0 = off
-    // 1 = overt on
-    // 2 = ir on
-
 
     _currentLight = c;
     emit currentLightChanged(c);
     //set pwm outputs to control lights
-    if (c==0)
+    if (c==LIGHTS_OFF)
     {
         //set both lights off
+            qDebug() << "Setting lights OFF";
             sendMavCommand(defaultComponentId(),
                            MAV_CMD_DO_SET_SERVO,
                            false,
@@ -4352,61 +4351,241 @@ void Vehicle::setLight(int c)
                            0,
                            0,
                            0);
+            _currentLightState = LIGHT_STATE_OFF;
     }
-    else if (c==1)
+    else if (c==LIGHTS_OVERT_ON)
     {
-        //set overt on on both lights
-        sendMavCommand(defaultComponentId(),
-                       MAV_CMD_DO_SET_SERVO,
-                       false,
-                       ledChannel1,
-                       overtHigh,
-                       0,
-                       0,
-                       0,
-                       0,
-                       0);
-        sendMavCommand(defaultComponentId(),
-                       MAV_CMD_DO_SET_SERVO,
-                       false,
-                       ledChannel2,
-                       overtHigh,
-                       0,
-                       0,
-                       0,
-                       0,
-                       0);
+        //if mode is follow_selected_camera then we should only turn on either the front or back depending on which camera is selected
+        if (_lightcontrolMode == ALL_ON)
+        {
+            //set overt on on both lights
+            qDebug() << "Setting ALL overt lights ON";
+            sendMavCommand(defaultComponentId(),
+                           MAV_CMD_DO_SET_SERVO,
+                           false,
+                           ledChannel1,
+                           overtHigh,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0);
+            sendMavCommand(defaultComponentId(),
+                           MAV_CMD_DO_SET_SERVO,
+                           false,
+                           ledChannel2,
+                           overtHigh,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0);
+            _currentLightState = LIGHT_STATE_ALL_OVERT;
+        }
+        else  //in this case, we can assume follow camera mode is on, so the light we turn on is dependent on which camera is currently selected
+        {
+            switch (_currentCamera)
+            {
+                case FRONT_CAMERA:
+                    qDebug() << "Setting FRONT OVERT LIGHT ON";
+                    sendMavCommand(defaultComponentId(),
+                               MAV_CMD_DO_SET_SERVO,
+                               false,
+                               ledChannel1,
+                               overtHigh,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0);
+                    qDebug() << "Setting REAR LIGHT OFF";
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel2,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    _currentLightState = LIGHT_STATE_FRONT_OVERT;
+                break;
+                case REAR_CAMERA:
+                    qDebug() << "Setting REAR OVERT LIGHT ON";
+                    sendMavCommand(defaultComponentId(),
+                               MAV_CMD_DO_SET_SERVO,
+                               false,
+                               ledChannel2,
+                               overtHigh,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0);
+                    qDebug() << "Setting FRONT LIGHT OFF";
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel1,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    _currentLightState = LIGHT_STATE_REAR_OVERT;
+                break;
+                case THERMAL_CAMERA:
+                     //set both lights off
+                    qDebug() << "Setting lights OFF";
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel1,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel2,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    _currentLightState = LIGHT_STATE_THERMAL_OFF;
+                break;
+            }
+        }
+
+
     }
-    else
+    else if (c==LIGHTS_IR_ON)
     {
-        //set ir on and overt off
-        sendMavCommand(defaultComponentId(),
-                       MAV_CMD_DO_SET_SERVO,
-                       false,
-                       ledChannel1,
-                       irHigh,
-                       0,
-                       0,
-                       0,
-                       0,
-                       0);
-        sendMavCommand(defaultComponentId(),
-                       MAV_CMD_DO_SET_SERVO,
-                       false,
-                       ledChannel2,
-                       irHigh,
-                       0,
-                       0,
-                       0,
-                       0,
-                       0);
+        //if mode is follow_selected_camera then we should only turn on either the front or back depending on which camera is selected
+        if (_lightcontrolMode == ALL_ON)
+        {
+            //set overt on on both lights
+            qDebug() << "Setting all IR lights ON";
+            sendMavCommand(defaultComponentId(),
+                           MAV_CMD_DO_SET_SERVO,
+                           false,
+                           ledChannel1,
+                           irHigh,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0);
+            sendMavCommand(defaultComponentId(),
+                           MAV_CMD_DO_SET_SERVO,
+                           false,
+                           ledChannel2,
+                           irHigh,
+                           0,
+                           0,
+                           0,
+                           0,
+                           0);
+            _currentLightState = LIGHT_STATE_ALL_IR;
+        }
+        else  //in this case, we can assume follow camera mode is on, so the light we turn on is dependent on which camera is currently selected
+        {
+            switch (_currentCamera)
+            {
+                case FRONT_CAMERA:
+                    qDebug() << "Setting FRONT IR Light ON";
+                    sendMavCommand(defaultComponentId(),
+                               MAV_CMD_DO_SET_SERVO,
+                               false,
+                               ledChannel1,
+                               irHigh,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0);
+                    qDebug() << "Setting REAR LIGHT OFF";
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel2,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    _currentLightState = LIGHT_STATE_FRONT_IR;
+                break;
+                case REAR_CAMERA:
+                    qDebug() << "Setting REAR IR Light ON";
+                    sendMavCommand(defaultComponentId(),
+                               MAV_CMD_DO_SET_SERVO,
+                               false,
+                               ledChannel2,
+                               irHigh,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0);
+                    qDebug() << "Setting FRONT LIGHT OFF";
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel1,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    _currentLightState = LIGHT_STATE_REAR_IR;
+                break;
+                case THERMAL_CAMERA:
+                     //set both lights off
+                    qDebug() << "Setting ALL LIGHTS OFF";
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel1,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    sendMavCommand(defaultComponentId(),
+                                   MAV_CMD_DO_SET_SERVO,
+                                   false,
+                                   ledChannel2,
+                                   lightOff,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   0);
+                    _currentLightState = LIGHT_STATE_THERMAL_OFF;
+                break;
+            }
+        }
     }
     emit currentLightChanged(c);
+    emit currentLightStateChanged(_currentLightState);
 
 }
 void Vehicle::_setCameraPosition(int c)
 {
+    int _lightcontrolMode;
     //first stop the timer if it is running
+
      _streamControlTimer.stop();
     _currentCamera = c;
     MAV_COMPONENT cam;
@@ -4432,6 +4611,19 @@ void Vehicle::_setCameraPosition(int c)
     if (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl)
         _streamControlTimer.start();
 
+    _lightcontrolMode = _settingsManager->appSettings()->lightControlMode()->rawValue().toUInt();
+    //now we need to handle the lights.. if lightcontrolMode is set to follow camera, then we need to swap lights around if lights are on
+
+    qDebug() << "_currentLight " << _currentLight << "_lightcontrolMode" << _lightcontrolMode;
+    //if the lights are off, or lightcontromode is all on, then we don't need to do anything here
+    if (_currentLight == LIGHTS_OFF || _lightcontrolMode == ALL_ON)
+        return;
+
+    qDebug() << "setting light to " << _currentLight;
+    //it's possible the lights need to be turn on/swapped based on the camera selection, so setLight
+    setLight(_currentLight);
+
+
 }
 
 void Vehicle::_checkAndTryAvailability()
@@ -4440,7 +4632,7 @@ void Vehicle::_checkAndTryAvailability()
 
     if (_active && !_availability)
     {
-        qDebug()<<"vehicle is active but not available, request control";
+        //qDebug()<<"vehicle is active but not available, request control";
         requestControl(true);
     }
     else
@@ -4487,6 +4679,7 @@ void Vehicle::_videoSettingsChanged()
 
 void Vehicle::gotoNextCamera()
 {
+    int _lightcontrolMode;
     _streamControlTimer.stop();
     int c = _currentCamera + 1;
     if(c >= 3) c = 0;
@@ -4512,6 +4705,18 @@ void Vehicle::gotoNextCamera()
     //restart the stream control timer
     if (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl)
         _streamControlTimer.start();
+
+    _lightcontrolMode = _settingsManager->appSettings()->lightControlMode()->rawValue().toUInt();
+    //now we need to handle the lights.. if lightcontrolMode is set to follow camera, then we need to swap lights around if lights are on
+
+    qDebug() << "_currentLight " << _currentLight << "_lightcontrolMode" << _lightcontrolMode;
+    //if the lights are off, or lightcontromode is all on, then we don't need to do anything here
+    if (_currentLight == LIGHTS_OFF || _lightcontrolMode == ALL_ON)
+        return;
+
+    qDebug() << "setting light to " << _currentLight;
+    //it's possible the lights need to be turn on/swapped based on the camera selection, so setLight
+    setLight(_currentLight);
 }
 void Vehicle::setSlowSpeedMode(bool value)
 {

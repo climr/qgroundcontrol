@@ -1158,11 +1158,11 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if(action == _buttonActionToggleAudio) {
          if (buttonDown) emit toggleAudioPlayback();
     } else if (action == _buttonActionLightsOff){
-        if (buttonDown) emit setLightMode(0);
+        if (buttonDown) emit setLightMode(LIGHTS_OFF);
     } else if (action == _buttonActionLightsOnOvert){
-        if (buttonDown) emit setLightMode(1);
+        if (buttonDown) emit setLightMode(LIGHTS_OVERT_ON);
     } else if (action == _buttonActionLightsOnIR){
-        if (buttonDown) emit setLightMode(2);
+        if (buttonDown) emit setLightMode(LIGHTS_IR_ON);
     } else if(action == _buttonActionGimbalUp) {
         if (buttonDown) _pitchStep(1);
     } else if(action == _buttonActionGimbalDown) {

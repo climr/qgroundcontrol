@@ -791,16 +791,29 @@ Item {
                     }
                     QGCLabel {
                         text: getLightModeName()
-                        color: (activeVehicle) ? ((activeVehicle.currentLight !== 0) ? "red" : "white") : "Loading..";
-                        function getLightModeName() {
+                        color: (activeVehicle) ? (((activeVehicle.currentLightState !== 0) && (activeVehicle.currentLightState !== 7)) ? "red" : "white") : "Loading..";
+                        function getLightModeName() {                                                      
                             if (activeVehicle)
                             {
-                            if(activeVehicle.currentLight === 0)
-                                return qsTr("Off")
-                            else if (activeVehicle.currentLight === 1)
-                                return qsTr("Overt On")
-                            else
-                                return qsTr("IR On")
+                                switch (activeVehicle.currentLightState)
+                                {
+                                case 0:
+                                    return qsTr("Off")
+                                case 1:
+                                    return qsTr("Front Overt On")
+                                case 2:
+                                    return qsTr("Front IR On")
+                                case 3:
+                                    return qsTr("Rear Overt On")
+                                case 4:
+                                    return qsTr("Rear IR On")
+                                case 5:
+                                    return qsTr("All Overt On")
+                                case 6:
+                                    return qsTr("All IR On")
+                                case 7:
+                                    return qsTr("Off (Thermal)")
+                                }
                             }
                             return  qsTr("Loading..")
                         }

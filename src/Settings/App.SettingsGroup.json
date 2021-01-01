@@ -221,6 +221,14 @@
     "defaultValue":     2
 },
 {
+    "name":             "lightControlMode",
+    "shortDescription": "Light behavior mode",
+    "type":             "uint32",
+    "enumStrings":      "Follow Selected Camera,All On",
+    "enumValues":       "0,1",
+    "defaultValue":     0
+},
+{
     "name":                 "apmStartMavlinkStreams",
     "shortDescription":     "Request start of MAVLink telemetry streams (ArduPilot only)",
     "type":                 "bool",

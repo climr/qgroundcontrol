@@ -632,6 +632,7 @@ public:
     Q_PROPERTY(QVariantList         staticCameraList        READ staticCameraList                                       CONSTANT)
     Q_PROPERTY(int                  currentCamera           READ currentCamera                                          NOTIFY currentCameraChanged)
     Q_PROPERTY(int                  currentLight            READ currentLight                                           NOTIFY currentLightChanged)
+    Q_PROPERTY(int                  currentLightState       READ currentLightState                                      NOTIFY currentLightStateChanged)
     Q_PROPERTY(int                  currentGimbalAngle      READ currentGimbalAngle                                     NOTIFY currentGimbalPanChanged)
     Q_PROPERTY(bool                 isGimbalActive         READ isGimbalActive                                         NOTIFY gimbalActiveChanged)
     Q_PROPERTY(int                  headingCompensatedGimbalAngle      READ currentGimbalCompensatedAngle               NOTIFY currentHeadingGimbalCompensationChanged)
@@ -1162,6 +1163,7 @@ public:
     QGCCameraManager*           dynamicCameras      () { return _cameras; }
     int                         currentCamera       () {return _currentCamera;}
     int                         currentLight        () {return _currentLight;}
+    int                         currentLightState        () {return _currentLightState;}
     int                         currentGimbalAngle  () {return _gimbalDegrees;}
     bool                        isGimbalActive      () {if (_gimbalDegrees != 0) return true; return false;}
     int                         currentGimbalCompensatedAngle () {return _headingWithGimbalOffset;}
@@ -1266,6 +1268,7 @@ signals:
     void weaponsPreArmedChanged         (bool value);
     void currentCameraChanged           (int camera);
     void currentLightChanged            (int light);
+    void currentLightStateChanged       (int lightState);
     void currentGimbalPanChanged        (int value);
     void gimbalActiveChanged            (bool value);
     void currentHeadingGimbalCompensationChanged (int value);
@@ -1574,6 +1577,7 @@ private:
     bool    _slowspeedmode = false;    ///true: slow speed mode is on
     int     _currentCamera = 0;
     int     _currentLight = 0;
+    int     _currentLightState = 0;
     int     _gimbalDegrees = 0;  ///calculated value of the gimbal angle in degrees
     bool    _centeredGimbal = false;  ///track if the gimbal has been centered, to avoid excessive set servo commands
     int     _headingWithGimbalOffset = 0; ///calculated heading with gimbal angle compensation
@@ -1736,5 +1740,30 @@ private:
     static const char* _joystickEnabledSettingsKey;
 
     QList<QHostAddress>     _localAddress;
+
+    enum {
+        LIGHTS_OFF = 0,
+        LIGHTS_OVERT_ON,
+        LIGHTS_IR_ON
+    };
+    enum {
+        FOLLOW_SELECTED_CAMERA = 0,
+        ALL_ON
+    };
+    enum {
+        FRONT_CAMERA = 0,
+        THERMAL_CAMERA,
+        REAR_CAMERA
+    };
+    enum {
+        LIGHT_STATE_OFF = 0,
+        LIGHT_STATE_FRONT_OVERT,
+        LIGHT_STATE_FRONT_IR,
+        LIGHT_STATE_REAR_OVERT,
+        LIGHT_STATE_REAR_IR,
+        LIGHT_STATE_ALL_OVERT,
+        LIGHT_STATE_ALL_IR,
+        LIGHT_STATE_THERMAL_OFF
+    };
 
 };

@@ -41,6 +41,7 @@ Rectangle {
     property string _mapProvider:               QGroundControl.settingsManager.flightMapSettings.mapProvider.value
     property string _mapType:                   QGroundControl.settingsManager.flightMapSettings.mapType.value
     property Fact _followTarget:                QGroundControl.settingsManager.appSettings.followTarget
+    property Fact _lightControlMode:            QGroundControl.settingsManager.appSettings.lightControlMode
     property real _panelWidth:                  _root.width * _internalWidthRatio
     property real _margins:                     ScreenTools.defaultFontPixelWidth
     property var _planViewSettings:             QGroundControl.settingsManager.planViewSettings
@@ -1136,7 +1137,61 @@ Rectangle {
                         }
                     }
 
-                    Item { width: 1; height: _margins; visible: videoRecSectionLabel.visible }
+                    Item { width: 1; height: _margins }
+
+
+
+
+
+                    QGCLabel {
+                        id:                             lightControlSectionLabel
+                        text:                           qsTr("Light Control Settings")
+                        visible:                        true
+                    }
+
+
+                    Rectangle {
+                        Layout.preferredHeight: lightcontrolGrid.y + lightcontrolGrid.height + _margins
+                        Layout.preferredWidth:  lightcontrolGrid.width + (_margins * 2)
+                        color:                  qgcPal.windowShade
+                        visible:                lightControlSectionLabel.visible
+                        Layout.fillWidth:       true
+
+                        QGCLabel {
+                            id:                 lightwarningLabel
+                            anchors.margins:    _margins
+                            anchors.top:        parent.top
+                            anchors.left:       parent.left
+                            anchors.right:      parent.right
+                            font.pointSize:     ScreenTools.smallFontPointSize
+                            wrapMode:           Text.WordWrap
+                            text:               qsTr("Note: 'Follow Selected Camera' causes the light to be syncronized with the selected camera, and turns off all lights when the thermal camera is selected. 'All On' turns on the front and rear lights when the lights are activated and is independent of camera selection.")
+                        }
+
+                        GridLayout {
+                            id:                         lightcontrolGrid
+                            anchors.topMargin:          _margins
+                            anchors.top:                lightwarningLabel.bottom
+                            Layout.fillWidth:           true
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            columns:                    2
+
+
+                            QGCLabel {
+                                text:                   qsTr("Light Control Mode")
+                                visible:                _lightControlMode.visible
+                            }
+                            FactComboBox {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   _lightControlMode
+                                indexModel:             false
+                                visible:                _lightControlMode.visible
+                            }
+                        }
+                    }
+
+
+                    Item { width: 1; height: _margins }
 
                     QGCLabel {
                         id:         brandImageSectionLabel

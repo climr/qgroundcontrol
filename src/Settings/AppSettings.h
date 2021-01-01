@@ -52,6 +52,7 @@ public:
     DEFINE_SETTINGFACT(defaultFirmwareType)
     DEFINE_SETTINGFACT(gstDebugLevel)
     DEFINE_SETTINGFACT(followTarget)
+    DEFINE_SETTINGFACT(lightControlMode)
     DEFINE_SETTINGFACT(enableTaisync)
     DEFINE_SETTINGFACT(enableTaisyncVideo)
     DEFINE_SETTINGFACT(enableMicrohard)

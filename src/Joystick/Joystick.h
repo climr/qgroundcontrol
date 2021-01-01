@@ -276,6 +276,12 @@ private:
     // Override from QThread
     virtual void run();
 
+    enum {
+        LIGHTS_OFF,
+        LIGHTS_OVERT_ON,
+        LIGHTS_IR_ON
+    };
+
 protected:
 
     enum {

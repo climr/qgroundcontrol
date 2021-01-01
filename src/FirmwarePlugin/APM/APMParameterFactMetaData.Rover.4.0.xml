@@ -81,7 +81,7 @@
     <field name="UnitText">pwm in microseconds</field>
 </param>
 
-<param humanName="Amarok Light 1 Servo" name="APMrover2:LIGHT_1_SER" documentation="This value is the channel used for the Amarok light number 1" user="Amarok">
+<param humanName="Amarok Front Light Servo Channel" name="APMrover2:LIGHT_1_SER" documentation="This value is the channel used for the Amarok Front Light" user="Amarok">
     <value code="4">Servo 4</value>
     <value code="5">Servo 5</value>
     <value code="6">Servo 6</value>
@@ -96,7 +96,7 @@
     <value code="15">Servo 15</value>
 </param>
 
-<param humanName="Amarok Light 2 Servo" name="APMrover2:LIGHT_2_SER" documentation="This value is the channel used for the Amarok light number 2" user="Amarok">
+<param humanName="Amarok Rear Light Servo Channel" name="APMrover2:LIGHT_2_SER" documentation="This value is the channel used for the Amarok Rear Light" user="Amarok">
     <value code="4">Servo 4</value>
     <value code="5">Servo 5</value>
     <value code="6">Servo 6</value>
