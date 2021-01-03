@@ -1422,6 +1422,7 @@ private:
     void _setCameraPosition             (int value);
     void _sendCurrentCameraPosition     ();
     void _checkAndTryAvailability       ();
+    void _checkRequestCounter           ();
     void _videoSettingsChanged          ();
     void _missionManagerError           (int errorCode, const QString& errorMsg);
     void _geoFenceManagerError          (int errorCode, const QString& errorMsg);
@@ -1497,7 +1498,8 @@ private:
     bool            _landing;
     bool            _vtolInFwdFlight;
     bool            _availability;   ///<true: The vehicle is available to control
-    uint32_t        _unavailable_count;
+    uint32_t        _requestControlCounter;
+    bool            _vehicleSupportsChangeOperator;
     uint32_t        _onboardControlSensorsPresent;
     uint32_t        _onboardControlSensorsEnabled;
     uint32_t        _onboardControlSensorsHealth;
@@ -1537,6 +1539,7 @@ private:
     QTimer                          _mavCommandAckTimer;
     QTimer                          _streamControlTimer;
     QTimer                          _availabilityControlTimer;
+    QTimer                          _availabilityRequestTimer;
     int                             _mavCommandRetryCount;
     int                             _capabilitiesRetryCount =               0;
     QTime                           _capabilitiesRetryElapsed;

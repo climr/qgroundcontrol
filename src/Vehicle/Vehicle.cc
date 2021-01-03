@@ -137,7 +137,8 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _landing(false)
     , _vtolInFwdFlight(false)
     , _availability(false)
-    , _unavailable_count(0)
+    , _requestControlCounter(0)
+    , _vehicleSupportsChangeOperator(true)
     , _onboardControlSensorsPresent(0)
     , _onboardControlSensorsEnabled(0)
     , _onboardControlSensorsHealth(0)
@@ -275,7 +276,14 @@ Vehicle::Vehicle(LinkInterface*             link,
     _availabilityControlTimer.setSingleShot(false);
     connect(&_availabilityControlTimer, &QTimer::timeout, this, &Vehicle::_checkAndTryAvailability);
     _availabilityControlTimer.start();
-    // vehicle control timer, which should request control if control is available is currently false and the vehicle is active
+
+
+    //start a periodic timer that will looking at the _requestControlCounter value and enable availability if this value indicates we are not getting acks
+    _availabilityRequestTimer.setInterval(2000);
+    _availabilityRequestTimer.setSingleShot(false);
+    connect(&_availabilityRequestTimer, &QTimer::timeout, this, &Vehicle::_checkRequestCounter);
+    _availabilityRequestTimer.start();
+
 
     _mav = uas();
 
@@ -864,8 +872,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         _handleEstimatorStatus(message);
         break;
     case MAVLINK_MSG_ID_STATUSTEXT:
-        _handleStatusText(message, false /* longVersion */);
-        qDebug() << "got status text";
+        _handleStatusText(message, false /* longVersion */);        
         break;
     case MAVLINK_MSG_ID_STATUSTEXT_LONG:
         _handleStatusText(message, true /* longVersion */);
@@ -1741,7 +1748,12 @@ void Vehicle::_setAvailability(bool availability)
         emit availabilityChanged(_availability);
 
         if (_availability) //if availabiliity just just changed to true, reset the link metrics
-            _toolbox->mavlinkProtocol()->resetMetadataForLink(priorityLink());
+        {
+            // Reset link state
+            for (int i = 0; i < _links.length(); i++) {
+                _mavlink->resetMetadataForLink(_links.at(i));
+            }
+        }
 
         if (_availability && !parameterManager()->parametersReady())  //if vehicle went from unavailable to available, and params NOT ready, do a refresh
         {
@@ -1753,22 +1765,20 @@ void Vehicle::_setAvailability(bool availability)
 
 void Vehicle::_handleOperatorControl(mavlink_message_t& message)
 {
-    mavlink_change_operator_control_ack_t changeAck;
-    qDebug()<<"Got Change Operator Control ACK";
+    mavlink_change_operator_control_ack_t changeAck;    
+    _requestControlCounter = 0;  //reset the request counter since we got an ack of some sort
+    _vehicleSupportsChangeOperator = true;  //this vehicle supports change operator functionality
+    _availabilityRequestTimer.stop(); //no more need to monitor for failed acks since we know we got one
+
     mavlink_msg_change_operator_control_ack_decode(&message, &changeAck);
     if (changeAck.ack == 0 && changeAck.control_request == 0) //if we requested control and control is granted
     {
         qDebug()<<"Change Operator Control ACK indicates control is available";
-        _setAvailability(true);  //control is available
-        _unavailable_count = 0;
+        _setAvailability(true);  //control is available        
     }
-    else if (changeAck.control_request == 0)
+    else if (changeAck.ack == 1 && changeAck.control_request == 0)
     {
-        qDebug()<<"Change Operator Control ACK indicates control is NOT available";
-        //show the unavailable message every so often
-        if ((_unavailable_count++ % 20) == 0)
-            //qgcApp()->showMessage(vehicle_not_avaialable);
-
+        qDebug()<<"Change Operator Control ACK indicates control is NOT available";        
         _setAvailability(false);  //we requested control, but were denied
 
     }
@@ -2538,7 +2548,9 @@ void Vehicle::requestControl(bool control)
 
     sendMessageOnLink(priorityLink(), msg);
 
-    //qDebug()<<"Sending Change Operator Control";
+    if (control)
+        _requestControlCounter++;  //this will track how many times we've requested control. After some amount of attempts with not acks, then we can assume this is a traditional GCS and default to availability = true
+                                   //this is just to ensure this GCS vesion can still connect to FMUs which don't implement change_operator
 
 }
 
@@ -3003,6 +3015,7 @@ void Vehicle::_linkActiveChanged(LinkInterface *link, bool active, int vehicleID
     if (link == _priorityLink) {
         if (active && _connectionLost) {
             // communication to priority link regained
+            qDebug() << "Comms regained";
             _connectionLost = false;
             communicationRegained = true;
             emit connectionLostChanged(false);
@@ -3025,7 +3038,10 @@ void Vehicle::_linkActiveChanged(LinkInterface *link, bool active, int vehicleID
                 communicationLost = true;
                 _heardFrom = false;
                 emit connectionLostChanged(true);
-                _setAvailability(false);  // reset the availablility status since we have lost connection
+                qDebug() << "Comms lost";
+
+                if (_vehicleSupportsChangeOperator)
+                    _setAvailability(false);  // reset the availablility status since we have lost connection, this only needs to be done with the vehile supports change operator
 
                 if (_autoDisconnect) {
                     // Reset link state
@@ -4614,25 +4630,33 @@ void Vehicle::_setCameraPosition(int c)
     _lightcontrolMode = _settingsManager->appSettings()->lightControlMode()->rawValue().toUInt();
     //now we need to handle the lights.. if lightcontrolMode is set to follow camera, then we need to swap lights around if lights are on
 
-    qDebug() << "_currentLight " << _currentLight << "_lightcontrolMode" << _lightcontrolMode;
-    //if the lights are off, or lightcontromode is all on, then we don't need to do anything here
+     //if the lights are off, or lightcontromode is all on, then we don't need to do anything here
     if (_currentLight == LIGHTS_OFF || _lightcontrolMode == ALL_ON)
         return;
 
-    qDebug() << "setting light to " << _currentLight;
     //it's possible the lights need to be turn on/swapped based on the camera selection, so setLight
     setLight(_currentLight);
 
 
 }
 
+void Vehicle::_checkRequestCounter()
+{
+    if (_active && !_connectionLost && _requestControlCounter > 4)
+    {
+        //in this case we have an active connection to the vehicle, but have never received an ack
+        _availabilityControlTimer.stop();  //no need to send availability requests any more for this vehicle
+        _availabilityRequestTimer.stop();  //stop checking this, as we have now made our decision
+        _setAvailability(true);  //set the vehicle to available to the GCS will initiate parameter load and start normal comms
+        _vehicleSupportsChangeOperator = false;  //this vehicle apparnently does not support change operator
+    }
+}
 void Vehicle::_checkAndTryAvailability()
 {
-    //this is called periodically when the vehicle is active
-
-    if (_active && !_availability)
+    //this is called periodically when the vehicle is active    
+    if (_active && !_connectionLost && !_availability)
     {
-        //qDebug()<<"vehicle is active but not available, request control";
+        qDebug()<<"vehicle is active but not available, request control";
         requestControl(true);
     }
     else

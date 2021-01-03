@@ -46,7 +46,7 @@ Item {
             function getVideoText() {
                 if (activeVehicle && communicationLost)
                     return QGroundControl.settingsManager.videoSettings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
-                else if (!activeVehicle.vehicleAvailability)
+                else if (!vehicleAvailability)
                     return qsTr("VEHICLE IS IN USE BY ANOTHER GCS. WAITING FOR RELEASE...")
                 else
                     return QGroundControl.settingsManager.videoSettings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
