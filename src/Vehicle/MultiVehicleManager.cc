@@ -314,11 +314,12 @@ void MultiVehicleManager::_setActiveVehiclePhase2(void)
 //if we have never had control, or if the vehicle has declined control then the params will not be ready
 //if the vehicle was available (in the background) then params may have been loaded
 
-        _activeVehicle->requestControl(true);  //send the operator_change_request
+      //  _activeVehicle->requestControl(true);  //send the operator_change_request
 
 
 
         if (_activeVehicle->parameterManager()->parametersReady()) {
+            qDebug() << "multivehicle manager thinks params are ready";
             _parameterReadyVehicleAvailable = true;
             emit parameterReadyVehicleAvailableChanged(true);
         }

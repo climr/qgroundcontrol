@@ -138,7 +138,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _vtolInFwdFlight(false)
     , _availability(false)
     , _requestControlCounter(0)
-    , _vehicleSupportsChangeOperator(true)
+    , _vehicleSupportsChangeOperator(false)
     , _onboardControlSensorsPresent(0)
     , _onboardControlSensorsEnabled(0)
     , _onboardControlSensorsHealth(0)
@@ -267,9 +267,6 @@ Vehicle::Vehicle(LinkInterface*             link,
     _streamControlTimer.setInterval(1000);
     _streamControlTimer.setSingleShot(false);
     connect(&_streamControlTimer, &QTimer::timeout, this, &Vehicle::_sendCurrentCameraPosition);
-
-    // request vehicle control
-    requestControl(true);
 
     //start a periodic timer that will request vehicle control when the vehicle is active and we think it is unavailable
     _availabilityControlTimer.setInterval(2000);
@@ -1757,7 +1754,12 @@ void Vehicle::_setAvailability(bool availability)
 
         if (_availability && !parameterManager()->parametersReady())  //if vehicle went from unavailable to available, and params NOT ready, do a refresh
         {
+            qDebug() <<  "Refreshing params on vehicle" << _id;
             parameterManager()->refreshAllParameters();
+        }
+        else if (_availability)
+        {
+            qDebug() << "We believe params are already ready for vehicle" << _id;
         }
     }
 }
@@ -2494,15 +2496,16 @@ bool Vehicle::active()
 
 void Vehicle::setActive(bool active)
 {
+    qDebug() << "SetActive " << active;
     if (_active != active) {
         _active = active;
         _setCameraPosition(0);  //start off with first camera selected
         _startJoystick(false);
         emit activeChanged(_active);
 
-        if (!active)
+        if (!active && _vehicleSupportsChangeOperator)
         {
-            //no longer the active vehicle, so release control
+            //no longer the active vehicle, so release control            
             requestControl(false);
             _availability = false;
         }
@@ -2533,16 +2536,15 @@ void Vehicle::requestControl(bool control)
 {
     //this sends a change_operator_control request to the vehicle
     //response should indicate if control is granted or denied
-    char passkey[25];
     uint8_t control_request = (control)? 0:1;
-    mavlink_message_t msg;
+    mavlink_message_t msg; 
     mavlink_msg_change_operator_control_pack(_mavlink->getSystemId(),
                                              _mavlink->getComponentId(),
                                              &msg,
                                              id(),
                                              control_request,
                                              0,
-                                             passkey
+                                             NULL
                                              );
 
 
@@ -2894,7 +2896,7 @@ void Vehicle::_rallyPointLoadComplete()
 
 void Vehicle::_parametersReady(bool parametersReady)
 {
-    qDebug() << "_parametersReady" << parametersReady;
+    qDebug() << "_parametersReady" << parametersReady << "vehicle" << _id;
     // Try to set current unix time to the vehicle
     _sendQGCTimeToVehicle();
     // Send time twice, more likely to get to the vehicle on a noisy link
@@ -4612,6 +4614,8 @@ void Vehicle::_setCameraPosition(int c)
     emit currentCameraChanged(c);
     qDebug() << "Changing to camera" << c << cam;
     //send command to set camera
+
+
     sendMavCommand(cam,
                    MAV_CMD_SET_CAMERA_MODE,
                    false,
@@ -4622,6 +4626,8 @@ void Vehicle::_setCameraPosition(int c)
                    0,
                    0,
                    0);
+
+
 
     //restart the stream control timer
     if (_settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH265StreamControl || _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoSourceUDPH264StreamControl)
@@ -4635,7 +4641,7 @@ void Vehicle::_setCameraPosition(int c)
         return;
 
     //it's possible the lights need to be turn on/swapped based on the camera selection, so setLight
-    setLight(_currentLight);
+     setLight(_currentLight);
 
 
 }
@@ -4660,10 +4666,13 @@ void Vehicle::_checkAndTryAvailability()
         requestControl(true);
     }
     else
-        qDebug()<<"Not requesting control because vehicle is not active or already available";
+        qDebug()<<"Not requesting control of vehicle" << _id << "because vehicle is not active or already available";
 }
 void Vehicle::_sendCurrentCameraPosition()
 {
+    if (!_active)  //don't do this if the vehicle is not _active (e.g. selected)
+        return;
+
     MAV_COMPONENT cam;
     if (_currentCamera==0) cam = MAV_COMP_ID_CAMERA;
     else if (_currentCamera==1)  cam = MAV_COMP_ID_CAMERA2;
@@ -5070,7 +5079,7 @@ void Vehicle::_vehicleParamLoaded(bool ready)
     //   way to update this?
     if(ready) {
         emit hobbsMeterChanged();
-        qDebug() << "vehicle loaded and params ready";
+        qDebug() << "vehicle loaded and params ready, vehicle" << _id;
     }
 }
 

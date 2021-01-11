@@ -130,6 +130,7 @@ ParameterManager::ParameterManager(Vehicle* vehicle)
         _parametersReady = false;
     }
     else if (!_logReplay){
+        qDebug() << "refreshing params from withing parametermanager";
         refreshAllParameters();
     }
 }
