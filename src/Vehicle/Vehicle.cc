@@ -4324,8 +4324,8 @@ void Vehicle::setLight(int c)
         }
 
 
-    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_OVERT_ON")) {
-        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_OVERT_ON");
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "OVERT_LIGHT_ON")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "OVERT_LIGHT_ON");
         overtHigh = (int)fact->rawValue().toInt();
         }
 
@@ -4334,8 +4334,8 @@ void Vehicle::setLight(int c)
         lightOff = (int)fact->rawValue().toInt();
         }
 
-    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "LIGHT_IR_ON")) {
-        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "LIGHT_IR_ON");
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, "IR_LIGHT_ON")) {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId, "IR_LIGHT_ON");
         irHigh = (int)fact->rawValue().toInt();
         }
 
